@@ -13,7 +13,7 @@ public class BaseResponse<T> {
     private String message;
     private boolean isSuccessful;
     private T data;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm:ss dd/MM/yyyy")
     private LocalDateTime timeStamp;
 
 

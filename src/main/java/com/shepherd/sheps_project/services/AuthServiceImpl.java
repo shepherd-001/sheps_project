@@ -6,6 +6,7 @@ import com.shepherd.sheps_project.data.models.Gender;
 import com.shepherd.sheps_project.data.models.Role;
 import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.UserRepository;
+import com.shepherd.sheps_project.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
+        checkIfUserExists(registrationRequest.getEmail());
         User newUser = User.builder()
                 .firstName(registrationRequest.getFirstName().trim())
                 .lastName(registrationRequest.getLastName().trim())
@@ -28,18 +30,16 @@ public class AuthServiceImpl implements AuthService {
                 .gender(Gender.valueOf(registrationRequest.getGender().toUpperCase().trim()))
                 .roles(Set.of(Role.valueOf(registrationRequest.getRole().toUpperCase().trim())))
                 .build();
-//        User newUser = new User();
-//        newUser.setFirstName(registrationRequest.getFirstName());
-//        newUser.setLastName(registrationRequest.getLastName());
-//        newUser.setEmail(registrationRequest.getEmail());
-//        newUser.setPassword(registrationRequest.getPassword());
-//        newUser.setGender(Gender.valueOf(registrationRequest.getGender().toUpperCase().trim()));
-//        newUser.setRoles(Set.of(Role.valueOf(registrationRequest.getRole().toUpperCase().trim())));
         User savedUser = userRepository.save(newUser);
     //todo implement send email verification
 
         log.info("User with the first name {} registered successfully", savedUser.getFirstName());
         return getRegisterUserResponse(savedUser);
+    }
+
+    private void checkIfUserExists(String email) {
+        if(userRepository.existsByEmail(email))
+            throw new ResourceNotFoundException("User with the provided email already exists");
     }
 
     private static RegisterUserResponse getRegisterUserResponse(User savedUser) {
