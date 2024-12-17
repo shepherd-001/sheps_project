@@ -8,6 +8,7 @@ import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
 import com.shepherd.sheps_project.services.emailService.EmailValidationService;
+import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,18 +16,22 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Set;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final EmailValidationService emailValidationService;
+    private final PasswordValidationService passwordValidationService;
 
     @Override
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
         validateEmail(email);
+        validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
         log.info("User with the first name {} registered successfully", savedUser.getFirstName());
@@ -53,6 +58,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    private void validatePassword(String password){
+        if(passwordValidationService.isPasswordBreached(password))
+            throw new PasswordValidationException("This password has been compromised. Use a new, unique password"
+                    , BAD_REQUEST.value());
+    }
+
     private static User buildRegisterUserRequest(RegisterUserRequest registrationRequest) {
         return User.builder()
                 .firstName(registrationRequest.getFirstName().trim())
@@ -76,39 +87,4 @@ public class AuthServiceImpl implements AuthService {
                 .isEnabled(savedUser.isEnabled())
                 .build();
     }
-
-//
-//    @Override
-//    public UserResponse getUserById(String userId) {
-//        User user = findUserById(userId);
-//        return getUserResponse(user);
-//    }
-
-//    private static UserResponse getUserResponse(User user) {
-//        return UserResponse.builder()
-//                .firstName(user.getFirstName())
-//                .lastName(user.getLastName())
-//                .email(user.getEmail())
-//                .gender(user.getGender())
-//                .roles(user.getRoles())
-//                .isEnabled(user.isEnabled())
-//                .build();
-//    }
-//
-//    private User findUserById(String userId) {
-//        return userRepository.findById(userId).orElseThrow(()->
-//                new NotFoundException("User with the provided id not found"));
-//    }
-//
-//    @Override
-//    public UserResponse getUserByEmail(String email) {
-//        User user = findUserByEmail(email);
-//        return getUserResponse(user);
-//    }
-//
-//    private User findUserByEmail(String email) {
-//        return userRepository.findByEmail(email).orElseThrow(()->
-//                new NotFoundException("User with the provided email address not found"));
-//    }
-
 }

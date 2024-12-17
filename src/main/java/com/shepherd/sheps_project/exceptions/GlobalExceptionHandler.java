@@ -112,4 +112,9 @@ public class GlobalExceptionHandler {
         ApiError errorResponse = errorResponseBuilder(errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(PasswordValidationException.class)
+    public ResponseEntity<ApiError> handlePasswordValidationException(PasswordValidationException ex) {
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.valueOf(ex.getStatusCode()));
+    }
 }

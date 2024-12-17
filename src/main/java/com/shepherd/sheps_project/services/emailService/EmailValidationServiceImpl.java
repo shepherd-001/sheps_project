@@ -20,10 +20,11 @@ import java.util.Set;
 public class EmailValidationServiceImpl implements EmailValidationService{
     @Value("${zero_bounce_api_key}")
     private String apiKey;
+    @Value("${zero_bounce_url}")
+    private String validationUrl;
     private final RestTemplate restTemplate;
-    private static final String VALIDATION_URL = "https://api.zerobounce.net/v2/validate";
-//    private static final String API_BASE_URL = "https://api.zerobounce.net/v2";
-//    private static final String VALIDATE_API_PATH = "/validate";
+
+
     private static final Set<String> DISPOSABLE_EMAIL_DOMAINS = Set.of(
             "10minutemail.com", "guerrillamail.com", "mailinator.com",
             "temp-mail.org", "throwawaymail.com", "fakemailgenerator.com",
@@ -59,7 +60,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
 
     private String buildValidationUrl(String email) {
         return UriComponentsBuilder
-                .fromUri(URI.create(String.format("%s", VALIDATION_URL)))
+                .fromUri(URI.create(String.format("%s", validationUrl)))
                 .queryParam("api_key", apiKey)
                 .queryParam("email", email)
                 .toUriString();
