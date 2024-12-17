@@ -1,8 +1,10 @@
 package com.shepherd.sheps_project.services.emailService;
+import com.shepherd.sheps_project.data.dtos.responses.EmailValidationResponse;
+
 import java.util.Map;
 
 
 public interface EmailValidationService {
-    Map<String, Object> validateEmail(String email);
+    EmailValidationResponse validateEmail(String email);
     boolean isDisposableEmail(String email);
 }

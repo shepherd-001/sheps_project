@@ -1,5 +1,6 @@
 package com.shepherd.sheps_project.services.emailService;
 
+import com.shepherd.sheps_project.data.dtos.responses.EmailValidationResponse;
 import com.shepherd.sheps_project.exceptions.EmailValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -40,13 +40,13 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     );
 
     @Override
-    public Map<String, Object> validateEmail(String email) {
+    public EmailValidationResponse validateEmail(String email) {
         try{
             log.info("\n\nInitiating email validation\n");
             checkEmailNotBlank(email);
             String url = buildValidationUrl(email);
             log.info("\n\nValidating email the email address\n");
-            return restTemplate.getForObject(url, Map.class);
+            return restTemplate.getForObject(url, EmailValidationResponse.class);
         }catch (HttpClientErrorException | HttpServerErrorException ex){
             log.error("\n\nError during email validation: {}\n", ex.getMessage());
             throw new EmailValidationException(ex.getMessage());

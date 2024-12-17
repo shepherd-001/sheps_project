@@ -45,17 +45,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void validateEmail(String email) {
-        Map<String, Object> validationResponse = emailValidationService.validateEmail(email);
-
-        if ("valid".equals(validationResponse.get("status"))) {
-            log.info("The email address is valid");
-        } else if ("disposable".equals(validationResponse.get("sub_status")) || emailValidationService.isDisposableEmail(email)) {
-            log.warn("The email address entered is disposable");
-            throw new DisposableEmailException("Disposable email is not allowed");
-        } else {
-            log.error("Error validating email address");
-            throw new EmailValidationException("Error validating email address. Try again with a valid email address");
-        }
+//        Map<String, Object> validationResponse = emailValidationService.validateEmail(email);
+//
+//        if ("valid".equals(validationResponse.get("status"))) {
+//            log.info("The email address is valid");
+//        } else if ("disposable".equals(validationResponse.get("sub_status"))
+//                || emailValidationService.isDisposableEmail(email)) {
+//            log.warn("The email address entered is disposable");
+//            throw new DisposableEmailException("Disposable email is not allowed");
+//        } else {
+//            log.error("Error validating email address");
+//            throw new EmailValidationException("Error validating email address. Try again with a valid email address");
+//        }
     }
 
     private void validatePassword(String password){
