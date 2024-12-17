@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static com.shepherd.sheps_project.utils.RegexPattern.EMAIL;
-import static com.shepherd.sheps_project.utils.RegexPattern.PASSWORD;
+import static com.shepherd.sheps_project.utils.RegexPattern.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,8 +14,12 @@ import static com.shepherd.sheps_project.utils.RegexPattern.PASSWORD;
 @Setter
 public class RegisterUserRequest {
     @NotBlank(message = "First name is required")
+    @Pattern(message = "First name can only contain letters, apostrophes, and hyphens," +
+            " but cannot start or end with apostrophes or hyphens", regexp = NAME)
     private String firstName;
     @NotBlank(message = "Last name is required")
+    @Pattern(message = "Last name can only contain letters, apostrophes, and hyphens," +
+            " but cannot start or end with apostrophes or hyphens", regexp = NAME)
     private String lastName;
     @NotBlank(message = "Email address is required")
     @Email(regexp = EMAIL, message = "Email address is invalid")
