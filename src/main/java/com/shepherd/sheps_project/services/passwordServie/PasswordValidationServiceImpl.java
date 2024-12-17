@@ -21,15 +21,14 @@ public class PasswordValidationServiceImpl implements PasswordValidationService{
 
     @Override
     public boolean isPasswordBreached(String password) {
-        if(password.isBlank())
-            throw new PasswordValidationException("Password is blank");
-
+        checkPasswordNotBlank(password);
         String sha1Hash = DigestUtils.sha1Hex(password).toUpperCase();
         String prefix = sha1Hash.substring(0, 5);
         String suffix = sha1Hash.substring(5);
 
         String apiUrl = String.format("%s/%s", PASSWORD_VALIDATION_URL, prefix);
         try{
+            log.info("\n\nChecking password breach\n");
             ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
             if(response.getStatusCode() == HttpStatus.OK && response.getBody() != null){
                 log.info("\n\nPawned password response: {}\n", response.getBody());
@@ -41,12 +40,17 @@ public class PasswordValidationServiceImpl implements PasswordValidationService{
                 case 400 -> throw new PasswordValidationException("The password format is invalid");
                 case 401 -> throw new PasswordValidationException("API key is missing or invalid");
                 case 403 -> throw new PasswordValidationException("User-Agent header is missing in the request");
-                case 404 -> false;
-                // Not pwned: No record found for the account/password. Return false to indicate safety.
+                case 404 -> false; //Password not breached
                 case 429 -> throw new PasswordValidationException("Rate limit exceeded. Please try again later");
+                case 503 -> throw new PasswordValidationException("Password validation service is temporarily unavailable. Please try again later");
                 default -> throw new PasswordValidationException(String.format("Client error exception when validating password. Code %s", statusCode.value()));
             };
         }
         return false;
+    }
+
+    private static void checkPasswordNotBlank(String password) {
+        if(password.isBlank())
+            throw new PasswordValidationException("Password is required to proceed validation");
     }
 }
