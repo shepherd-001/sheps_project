@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -77,6 +79,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     @Override
     public boolean isValidEmail(String email) {
         try{
+            email = email.trim();
             log.info("\n\nInitiating email validation\n");
             checkEmailNotBlank(email);
             isDisposableEmail(email);
@@ -84,40 +87,39 @@ public class EmailValidationServiceImpl implements EmailValidationService{
             log.info("\n\nValidating email the email address\n");
             EmailValidationResponse emailValidationResponse = restTemplate.getForObject(url, EmailValidationResponse.class);
             return isEmailValidAndAllowed(Objects.requireNonNull(emailValidationResponse));
-        }catch (RestClientException ex){
+        }catch (HttpClientErrorException | HttpServerErrorException ex){
             log.error("\n\nError during email validation: {}\n", ex.getMessage());
             throw new EmailValidationException(ex.getMessage());
         }
     }
 
     private static boolean isEmailValidAndAllowed(EmailValidationResponse validationResponse) {
-        String status = validationResponse.getStatus() != null ? validationResponse.getStatus().toLowerCase() : "";
-        String subStatus = validationResponse.getSubStatus() != null ? validationResponse.getSubStatus().toLowerCase() : "";
-        int domainAge = validationResponse.getDomainAgeDays() != null ? Integer.parseInt(validationResponse.getDomainAgeDays()) : 0;
+        String status = Optional.ofNullable(validationResponse.getStatus()).map(String::toLowerCase).orElse("");
+        String subStatus = Optional.ofNullable(validationResponse.getSubStatus()).map(String::toLowerCase).orElse("");
 
-        return switch (status) {
+       return switch (status) {
             case "valid" -> {
-                log.info("\n\nValid email-> sub status: '{}' and domain age: '{}'\n", subStatus, domainAge);
-                yield domainAge > 30;
+                log.info("\n\nValid email-> sub status: '{}'\n", subStatus);
+                yield true;
             }
-            case "do_not_mail" -> handleDoNoMailSubStatus(subStatus, domainAge);
+            case "do_not_mail" -> handleDoNoMailSubStatus(subStatus);
             default -> throw new EmailValidationException("Error validating email address." +
                     " Try again with a valid email address");
         };
     }
 
-    private static boolean handleDoNoMailSubStatus(String subStatus, int domainAge) {
+    private static boolean handleDoNoMailSubStatus(String subStatus) {
         return switch (subStatus) {
             case "role_based", "role_based_catch_all" -> {
-                log.info("\n\nValid email -> status: 'do_not_mail' sub status: '{}', domain age: '{}'\n",subStatus, domainAge);
-                yield domainAge > 30;
+                log.info("\n\nValid email -> status: 'do_not_mail' sub status: '{}'\n",subStatus);
+                yield true;
             }
             case "disposable" -> {
-                log.warn("\n\nThe email address entered is disposable\n");
+                log.error("\n\nThe email address entered is disposable\n");
                 throw new EmailValidationException("Disposable email address is not allowed");
             }
             default -> {
-                log.warn("\n\nUnacceptable email address with sub status: {}\n", subStatus);
+                log.error("\n\nUnacceptable email address with sub status: {}\n", subStatus);
                 throw new EmailValidationException("Unacceptable email address. Try again with a valid email address");
             }
         };
@@ -137,7 +139,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     }
 
     private static String extractDomainFromEmail(String email) {
-        return email.substring(email.indexOf('@') + 1);
+        return email.split("@")[1];
     }
 
     private String buildValidationUrl(String email) {
