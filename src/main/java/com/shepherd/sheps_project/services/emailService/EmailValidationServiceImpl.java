@@ -51,32 +51,6 @@ public class EmailValidationServiceImpl implements EmailValidationService{
         private String zipcode;
         @JsonProperty("processed_at")
         private String processedAt;
-
-        @Override
-        public String toString() {
-            return "EmailValidationResponse{" +
-                    "address='" + address + '\'' +
-                    ", status='" + status + '\'' +
-                    ", subStatus='" + subStatus + '\'' +
-                    ", freeEmail=" + freeEmail +
-                    ", didYouMean='" + didYouMean + '\'' +
-                    ", account='" + account + '\'' +
-                    ", domain='" + domain + '\'' +
-                    ", domainAgeDays='" + domainAgeDays + '\'' +
-                    ", activeInDays='" + activeInDays + '\'' +
-                    ", smtpProvider='" + smtpProvider + '\'' +
-                    ", mxRecord='" + mxRecord + '\'' +
-                    ", mxFound=" + mxFound +
-                    ", firstname='" + firstname + '\'' +
-                    ", lastname='" + lastname + '\'' +
-                    ", gender='" + gender + '\'' +
-                    ", country='" + country + '\'' +
-                    ", region='" + region + '\'' +
-                    ", city='" + city + '\'' +
-                    ", zipcode='" + zipcode + '\'' +
-                    ", processedAt='" + processedAt + '\'' +
-                    '}';
-        }
     }
 
     @Value("${zero_bounce_api_key}")
@@ -109,7 +83,6 @@ public class EmailValidationServiceImpl implements EmailValidationService{
             String url = buildValidationUrl(email);
             log.info("\n\nValidating email the email address\n");
             EmailValidationResponse emailValidationResponse = restTemplate.getForObject(url, EmailValidationResponse.class);
-        log.info("\n\nZero bounce response: {}\n",emailValidationResponse.toString());
             return isEmailValidAndAllowed(Objects.requireNonNull(emailValidationResponse));
         }catch (RestClientException ex){
             log.error("\n\nError during email validation: {}\n", ex.getMessage());
@@ -122,18 +95,21 @@ public class EmailValidationServiceImpl implements EmailValidationService{
         String subStatus = validationResponse.getSubStatus() != null ? validationResponse.getSubStatus().toLowerCase() : "";
         int domainAge = validationResponse.getDomainAgeDays() != null ? Integer.parseInt(validationResponse.getDomainAgeDays()) : 0;
 
-        log.info("\n\nStatus: {} subStatus: {}\n", status, subStatus);
-        if (status.equals("valid") || status.equals("do_not_mail")) {
-            return handleSubStatus(subStatus, domainAge);
-        }
-        log.error("Email status '{}' is unacceptable.", status);
-        throw new EmailValidationException("Unacceptable email address. Try again with a valid email address");
+        return switch (status) {
+            case "valid" -> {
+                log.info("\n\nValid email-> sub status: '{}' and domain age: '{}'\n", subStatus, domainAge);
+                yield domainAge > 30;
+            }
+            case "do_not_mail" -> handleDoNoMailSubStatus(subStatus, domainAge);
+            default -> throw new EmailValidationException("Error validating email address." +
+                    " Try again with a valid email address");
+        };
     }
 
-    private static boolean handleSubStatus(String subStatus, int domainAge) {
+    private static boolean handleDoNoMailSubStatus(String subStatus, int domainAge) {
         return switch (subStatus) {
-            case "null", "role_based_catch_all" -> {
-                log.info("\n\nValid email address with sub status: {} and domain age: {}\n", subStatus, domainAge);
+            case "role_based", "role_based_catch_all" -> {
+                log.info("\n\nValid email -> status: 'do_not_mail' sub status: '{}', domain age: '{}'\n",subStatus, domainAge);
                 yield domainAge > 30;
             }
             case "disposable" -> {
@@ -142,7 +118,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
             }
             default -> {
                 log.warn("\n\nUnacceptable email address with sub status: {}\n", subStatus);
-                throw new EmailValidationException("Error validating email address. Try again with a valid email address");
+                throw new EmailValidationException("Unacceptable email address. Try again with a valid email address");
             }
         };
     }
