@@ -53,6 +53,33 @@ public class EmailValidationServiceImpl implements EmailValidationService{
         private String zipcode;
         @JsonProperty("processed_at")
         private String processedAt;
+
+        @Override
+        public String toString() {
+            return "EmailValidationResponse{" +
+                    "address='" + address + '\'' +
+                    ", status='" + status + '\'' +
+                    ", subStatus='" + subStatus + '\'' +
+                    ", freeEmail=" + freeEmail +
+                    ", didYouMean='" + didYouMean + '\'' +
+                    ", account='" + account + '\'' +
+                    ", domain='" + domain + '\'' +
+                    ", domainAgeDays='" + domainAgeDays + '\'' +
+                    ", activeInDays='" + activeInDays + '\'' +
+                    ", smtpProvider='" + smtpProvider + '\'' +
+                    ", mxRecord='" + mxRecord + '\'' +
+                    ", mxFound=" + mxFound +
+                    ", firstname='" + firstname + '\'' +
+                    ", lastname='" + lastname + '\'' +
+                    ", gender='" + gender + '\'' +
+                    ", country='" + country + '\'' +
+                    ", region='" + region + '\'' +
+                    ", city='" + city + '\'' +
+                    ", zipcode='" + zipcode + '\'' +
+                    ", processedAt='" + processedAt + '\'' +
+                    '}';
+        }
+
     }
 
     @Value("${zero_bounce_api_key}")
@@ -79,13 +106,14 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     @Override
     public boolean isValidEmail(String email) {
         try{
-            email = email.trim();
+            email = email.toLowerCase().trim();
             log.info("\n\nInitiating email validation\n");
             checkEmailNotBlank(email);
             isDisposableEmail(email);
             String url = buildValidationUrl(email);
             log.info("\n\nValidating email the email address\n");
             EmailValidationResponse emailValidationResponse = restTemplate.getForObject(url, EmailValidationResponse.class);
+            log.info("\n\nEmail validation response: {}\n", emailValidationResponse.toString());
             return isEmailValidAndAllowed(Objects.requireNonNull(emailValidationResponse));
         }catch (HttpClientErrorException | HttpServerErrorException ex){
             log.error("\n\nError during email validation: {}\n", ex.getMessage());
@@ -103,8 +131,11 @@ public class EmailValidationServiceImpl implements EmailValidationService{
                 yield true;
             }
             case "do_not_mail" -> handleDoNoMailSubStatus(subStatus);
-            default -> throw new EmailValidationException("Error validating email address." +
-                    " Try again with a valid email address");
+            default -> {
+                log.info("\n\nInvalid email-> sub status: '{}'\n", subStatus);
+                throw new EmailValidationException("Error validating email address." +
+                        " Try again with a valid email address");
+            }
         };
     }
 

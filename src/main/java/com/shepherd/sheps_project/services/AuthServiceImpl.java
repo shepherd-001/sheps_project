@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
-//        validateEmail(email);
+        validateEmail(email);
         validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
@@ -41,6 +41,11 @@ public class AuthServiceImpl implements AuthService {
     private void checkIfUserExists(String email) {
         if(userRepository.existsByEmail(email))
             throw new AlreadyExistsException("User with the provided email already exists");
+    }
+
+    private void validateEmail(String email) {
+        if(!emailValidationService.isValidEmail(email))
+            throw new EmailValidationException("Your email address is not acceptable");
     }
 
     private void validatePassword(String password){
