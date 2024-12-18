@@ -27,6 +27,6 @@ public class AuthController {
     @GetMapping("validate-email")
     public ResponseEntity<Object> validateEmail(@RequestParam String email) {
         return ResponseEntity.ok()
-                .body(BaseResponse.build(emailValidationService.validateEmail(email)));
+                .body(BaseResponse.build(emailValidationService.isValidEmail(email)));
     }
 }

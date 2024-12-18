@@ -11,8 +11,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -79,24 +77,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<ApiError> handleHttpClientErrorException(HttpClientErrorException ex) {
-        log.error("\n\nHttp client error exception: {}\n", ex.getMessage());
-        return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(HttpServerErrorException.class)
-    public ResponseEntity<ApiError> handleHttpServerErrorException(HttpServerErrorException ex) {
-        log.error("\n\nHttp server error exception: {}\n", ex.getMessage());
-        return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.GATEWAY_TIMEOUT);
-    }
-
-    @ExceptionHandler(DisposableEmailException.class)
-    public ResponseEntity<ApiError> handleDisposableEmailException(DisposableEmailException ex) {
-        log.error("\n\nDisposable email exception: {}\n", ex.getMessage());
-        return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(EmailValidationException.class)
     public ResponseEntity<ApiError> handleEmailValidationException(EmailValidationException ex) {
         log.error("\n\nEmail validation exception: {}\n", ex.getMessage());
@@ -108,6 +88,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        log.error("\n\nMethod argument not valid exception: {}\n", ex.getMessage());
         }
         ApiError errorResponse = errorResponseBuilder(errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -115,6 +96,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PasswordValidationException.class)
     public ResponseEntity<ApiError> handlePasswordValidationException(PasswordValidationException ex) {
+        log.error("\n\nPassword validation exception: {}\n", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.valueOf(ex.getStatusCode()));
     }
 }

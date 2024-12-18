@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -30,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
-        validateEmail(email);
+//        validateEmail(email);
         validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
@@ -42,21 +41,6 @@ public class AuthServiceImpl implements AuthService {
     private void checkIfUserExists(String email) {
         if(userRepository.existsByEmail(email))
             throw new AlreadyExistsException("User with the provided email already exists");
-    }
-
-    private void validateEmail(String email) {
-//        Map<String, Object> validationResponse = emailValidationService.validateEmail(email);
-//
-//        if ("valid".equals(validationResponse.get("status"))) {
-//            log.info("The email address is valid");
-//        } else if ("disposable".equals(validationResponse.get("sub_status"))
-//                || emailValidationService.isDisposableEmail(email)) {
-//            log.warn("The email address entered is disposable");
-//            throw new DisposableEmailException("Disposable email is not allowed");
-//        } else {
-//            log.error("Error validating email address");
-//            throw new EmailValidationException("Error validating email address. Try again with a valid email address");
-//        }
     }
 
     private void validatePassword(String password){
