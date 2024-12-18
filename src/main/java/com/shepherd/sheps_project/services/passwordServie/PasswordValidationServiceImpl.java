@@ -11,12 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
-import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
-
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +19,16 @@ public class PasswordValidationServiceImpl implements PasswordValidationService{
     private final RestTemplate restTemplate;
     @Value("${have_i_been_pawned_url}")
     private String haveIBeenPawnedUrl;
+    private static final int SHA1_PREFIX_LENGTH = 5;
+    private static final int SHA1_SUFFIX_START = 5;
 
 
     @Override
     public boolean isPasswordBreached(String password) {
         checkPasswordNotBlank(password);
         String sha1Hash = DigestUtils.sha1Hex(password).toUpperCase();
-        String prefix = sha1Hash.substring(0, 5);
-        String suffix = sha1Hash.substring(5);
+        String prefix = sha1Hash.substring(0, SHA1_PREFIX_LENGTH);
+        String suffix = sha1Hash.substring(SHA1_SUFFIX_START);
 
         String apiUrl = String.format("%s/%s", haveIBeenPawnedUrl, prefix);
         try{
@@ -43,22 +39,31 @@ public class PasswordValidationServiceImpl implements PasswordValidationService{
             }
         }catch (HttpClientErrorException ex){
             log.error("\n\nError occurred during password breach check: {}\n", ex.getMessage());
-            HttpStatus statusCode = HttpStatus.valueOf(ex.getStatusCode().value());
-            return switch (statusCode) {
-                case BAD_REQUEST -> throw new PasswordValidationException("The password format is invalid", BAD_REQUEST.value());
-                case UNAUTHORIZED -> throw new PasswordValidationException("API key is missing or invalid", UNAUTHORIZED.value());
-                case FORBIDDEN -> throw new PasswordValidationException("User-Agent header is missing in the request", FORBIDDEN.value());
-                case NOT_FOUND -> false; //Password not breached
-                case TOO_MANY_REQUESTS -> throw new PasswordValidationException("Rate limit exceeded. Please try again later", TOO_MANY_REQUESTS.value());
-                case SERVICE_UNAVAILABLE -> throw new PasswordValidationException("Password validation service is temporarily unavailable. Please try again later", SERVICE_UNAVAILABLE.value());
-                default -> throw new PasswordValidationException(String.format("Client error exception when validating password. Code %s", statusCode.value()), statusCode.value());
-            };
+            handleHttpError(ex);
         }
         return false;
     }
 
-    private static void checkPasswordNotBlank(String password) {
+    private void checkPasswordNotBlank(String password) {
         if(password.isBlank())
             throw new PasswordValidationException("Password is required to proceed validation", 400);
+    }
+
+    private void handleHttpError(HttpClientErrorException ex) {
+        HttpStatus statusCode = HttpStatus.valueOf(ex.getStatusCode().value());
+        String errorMessage = getErrorMessage(statusCode);
+        throw new PasswordValidationException(errorMessage, statusCode.value());
+    }
+
+    private String getErrorMessage(HttpStatus statusCode) {
+        return switch (statusCode) {
+            case BAD_REQUEST -> "The password format is invalid";
+            case UNAUTHORIZED -> "API key is missing or invalid";
+            case FORBIDDEN -> "User-Agent header is missing in the request";
+            case NOT_FOUND -> "Password not breached";
+            case TOO_MANY_REQUESTS -> "Rate limit exceeded. Please try again later";
+            case SERVICE_UNAVAILABLE -> "Password validation service is temporarily unavailable. Please try again later";
+            default -> String.format("Client error exception when validating password. Code %s", statusCode.value());
+        };
     }
 }
