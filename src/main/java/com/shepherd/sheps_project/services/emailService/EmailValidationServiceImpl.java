@@ -139,7 +139,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     }
 
     private static String extractDomainFromEmail(String email) {
-        return email.split("@")[1];
+        return email.substring(email.indexOf('@') + 1);
     }
 
     private String buildValidationUrl(String email) {
