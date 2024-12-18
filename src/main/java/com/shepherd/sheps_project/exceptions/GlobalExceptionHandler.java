@@ -99,4 +99,10 @@ public class GlobalExceptionHandler {
         log.error("\n\nPassword validation exception: {}\n", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.valueOf(ex.getStatusCode()));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error("\n\nIllegal argument exception: {}\n", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
