@@ -1,20 +1,27 @@
-spring:
-  profiles:
-    active: dev
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-    database: mysql
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-
+server:
+  port: 9090
 logging:
   level:
     org.springframework.web: DEBUG
 
-server:
-  port: 9090
-
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: mysql
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  thymeleaf:
+    prefix=classpath:/templates/
+    suffix=.html
+zero_bounce_api_key: ${ZEROBOUNCE_API_KEY}
+zero_bounce_url: ${ZEROBOUNCE_URL}
+have_i_been_pawned_url: ${HAVE_I_BEEN_PAWNED_URL}
