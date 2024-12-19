@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.services.emailService;
+package com.shepherd.sheps_project.services.email;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shepherd.sheps_project.exceptions.EmailValidationException;

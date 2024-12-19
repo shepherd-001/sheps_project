@@ -7,7 +7,7 @@ import com.shepherd.sheps_project.data.models.Role;
 import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
-import com.shepherd.sheps_project.services.emailService.EmailValidationService;
+import com.shepherd.sheps_project.services.email.EmailValidationService;
 import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

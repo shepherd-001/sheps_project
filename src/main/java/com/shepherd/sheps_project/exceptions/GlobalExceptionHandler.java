@@ -105,4 +105,5 @@ public class GlobalExceptionHandler {
         log.error("\n\nIllegal argument exception: {}\n", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
+
 }
