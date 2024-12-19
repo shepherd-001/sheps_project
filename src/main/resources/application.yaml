@@ -22,6 +22,31 @@ spring:
   thymeleaf:
     prefix=classpath:/templates/
     suffix=.html
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          from: ${MAIL_FROM_EMAIL}
+#          ssl:
+#            enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+#        debug: true
+#
+mail_from_email: ${MAIL_FROM_EMAIL}
+mail_from_name: ${MAIL_FROM_NAME}
+mailersend_api_key: ${MAILERSEND_API_KEY}
+
 zero_bounce_api_key: ${ZEROBOUNCE_API_KEY}
 zero_bounce_url: ${ZEROBOUNCE_URL}
 have_i_been_pawned_url: ${HAVE_I_BEEN_PAWNED_URL}

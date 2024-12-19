@@ -106,4 +106,9 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MailSenderException.class)
+    public ResponseEntity<ApiError> handleException(MailSenderException ex) {
+        log.error("Email sender exception exception: {}", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }
