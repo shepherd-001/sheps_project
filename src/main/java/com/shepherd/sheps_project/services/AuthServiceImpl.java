@@ -7,6 +7,7 @@ import com.shepherd.sheps_project.data.models.Role;
 import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
+import com.shepherd.sheps_project.services.email.MailSenderService;
 import com.shepherd.sheps_project.services.email.EmailValidationService;
 import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final EmailValidationService emailValidationService;
     private final PasswordValidationService passwordValidationService;
+    private final MailSenderService mailSenderService;
 
     @Override
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {

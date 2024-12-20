@@ -2,13 +2,7 @@ package com.shepherd.sheps_project.services.email;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-import com.mailersend.sdk.MailerSend;
-import com.mailersend.sdk.MailerSendResponse;
-import com.mailersend.sdk.emails.Email;
-import com.mailersend.sdk.exceptions.MailerSendException;
 import com.shepherd.sheps_project.exceptions.MailSenderException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +17,9 @@ import java.io.UnsupportedEncodingException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailServiceImpl implements EmailService {
+public class MailSenderServiceImpl implements MailSenderService {
     private final JavaMailSender mailSender;
-//    @Value("${mail_from_email}")
-    @Value("${spring.mail.username}")
+    @Value("${mail_from_email}")
     private String email;
     @Value("${mail_from_name}")
     private String name;

@@ -36,13 +36,11 @@ spring:
             enable: true
             required: true
           from: ${MAIL_FROM_EMAIL}
-#          ssl:
-#            enable: true
           connectiontimeout: 10000
           timeout: 10000
           writetimeout: 10000
 #        debug: true
-#
+
 mail_from_email: ${MAIL_FROM_EMAIL}
 mail_from_name: ${MAIL_FROM_NAME}
 mailersend_api_key: ${MAILERSEND_API_KEY}

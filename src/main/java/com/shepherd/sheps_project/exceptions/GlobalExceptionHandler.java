@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MailSenderException.class)
     public ResponseEntity<ApiError> handleException(MailSenderException ex) {
-        log.error("Email sender exception exception: {}", ex.getMessage());
+        log.error("Mail sender exception exception: {}", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

@@ -113,8 +113,8 @@
 <div class="email-container">
     <div class="email-content">
         <div class="email-header">
-            <h1>Welcome to Our App!</h1>
-            <p class="greeting">Hello <strong>{{first_name}}</strong>,</p>
+            <h1>Verify Your Email Address</h1>
+            <p class="greeting">Hello <strong th:text="${first_name}">[User]</strong>,</p>
         </div>
 
         <p class="intro-text">
@@ -128,7 +128,7 @@
         <p>Click the button below to confirm your email:</p>
 
         <div class="confirmation-link-container">
-            <a href="{{confirmation_link}}" class="btn">Confirm Your Email</a>
+            <a th:href="${confirmation_link}" class="btn">Confirm Your Email</a>
         </div>
 
         <p>If you didn't create an account or didn't request this verification, please disregard this email.</p>

@@ -8,9 +8,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class EmailServiceImplTest {
+class MailSenderServiceImplTest {
     @Autowired
-    private EmailService emailService;
+    private MailSenderService mailSenderService;
 
     @Test
     void sendEmail() {
@@ -18,7 +18,7 @@ class EmailServiceImplTest {
         String subject = "Hello World";
         String htmlContent = "<h1>This is just testing the email</h1>";
 
-        emailService.sendEmail(to, subject, htmlContent);
+        mailSenderService.sendEmail(to, subject, htmlContent);
         assertThat("no").isNotBlank();
     }
 }
