@@ -108,7 +108,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MailSenderException.class)
     public ResponseEntity<ApiError> handleException(MailSenderException ex) {
-        log.error("Mail sender exception exception: {}", ex.getMessage());
+        log.error("Mail sender  exception: {}", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserIsAlreadyEnabledException.class)
+    public ResponseEntity<ApiError> handleException(UserIsAlreadyEnabledException ex) {
+        log.error("User is already enabled exception: {}", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ShepsTokenException.class)
+    public ResponseEntity<ApiError> handleException(ShepsTokenException ex) {
+        log.error("Sheps token exception: {}", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

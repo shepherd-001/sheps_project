@@ -17,6 +17,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -38,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
 //        validateEmail(email);
-        validatePassword(registrationRequest.getPassword());
+//        validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
         log.info("User with the first name {} registered successfully", savedUser.getFirstName());
@@ -81,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
         context.setVariable("confirmationLink", verificationLink);
         String htmlContent = templateEngine.process("email-confirmation", context);
         log.info("Email content ready to be sent to {}", user.getEmail());
-        mailSenderService.sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent);
+        CompletableFuture.runAsync(() -> mailSenderService.sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent));
     }
 
     private static RegisterUserResponse buildRegisterUserResponse(User savedUser) {
@@ -112,6 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
     private static EmailConfirmationResponse buildEmailConfirmationResponse(User user) {
         return EmailConfirmationResponse.builder()
+                .message("User verified successfully")
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())

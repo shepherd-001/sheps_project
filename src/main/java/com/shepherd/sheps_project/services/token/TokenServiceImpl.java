@@ -4,6 +4,7 @@ import com.shepherd.sheps_project.data.models.ShepsToken;
 import com.shepherd.sheps_project.data.models.TokenType;
 import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.TokenRepository;
+import com.shepherd.sheps_project.exceptions.ShepsTokenException;
 import com.shepherd.sheps_project.utils.RandomStringGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 public class TokenServiceImpl implements TokenService{
     private final TokenRepository tokenRepository;
     private static final int TOKEN_LENGTH = 100;
+
+
     @Override
     public String createToken(User user, TokenType tokenType, int expirationTimeInMinutes) {
         String token = RandomStringGenerator.generateRandomString(TOKEN_LENGTH);
@@ -28,6 +31,7 @@ public class TokenServiceImpl implements TokenService{
                 .expirationTime(LocalDateTime.now().plusMinutes(expirationTimeInMinutes))
                 .build();
         tokenRepository.save(shepsToken);
+        log.info("Created a new token");
         return token;
     }
 
@@ -37,43 +41,22 @@ public class TokenServiceImpl implements TokenService{
     }
 
     @Override
-    public ShepsToken findByUserEmailTokenAndTokenType(String email, String token, TokenType tokenType) {
-        return null;
+    public ShepsToken validateToken(String token, String email, TokenType tokenType) {
+        ShepsToken shepsToken = tokenRepository.findByUserAndTokenAndTokenType(email, token, tokenType);
+        if(shepsToken == null){
+            log.info("Token not found");
+            throw new ShepsTokenException("Token is invalid");
+        }else if(shepsToken.getExpirationTime().isBefore(LocalDateTime.now())){
+            log.info("Token is expired");
+            throw new ShepsTokenException("Token is expired");
+        }
+        return shepsToken;
+    }
+
+    @Override
+    public void deleteToken(ShepsToken shepsToken) {
+        tokenRepository.delete(shepsToken);
+        log.info("Deleted a token");
     }
 }
 
-
-
-
-//    public Token createToken(User user, TokenType tokenType, Duration expiryDuration) {
-//        String tokenValue = RandomStringGenerator.generateRandomString(128); // For simplicity
-//
-//        Token token = new Token();
-//        token.setTokenValue(tokenValue);
-//        token.setTokenType(tokenType);
-//        token.setExpired(false);
-//        token.setCreatedAt(LocalDateTime.now());
-//        token.setExpiresAt(LocalDateTime.now().plus(expiryDuration));
-//        token.setUser(user);
-//
-//        return tokenRepository.save(token);
-//    }
-//
-//    public Optional<Token> validateToken(String tokenValue, TokenType tokenType) {
-//        return tokenRepository.findByTokenValueAndTokenTypeAndExpiredFalse(tokenValue, tokenType)
-//                .filter(token -> token.getExpiresAt().isAfter(LocalDateTime.now()));
-//    }
-//
-//    public void expireToken(String tokenValue) {
-//        tokenRepository.findByTokenValue(tokenValue).ifPresent(token -> {
-//            token.setExpired(true);
-//            tokenRepository.save(token);
-//        });
-//    }
-//
-//    public void expireAllTokensForUser(User user, TokenType tokenType) {
-//        List<Token> tokens = tokenRepository.findAllByUserAndTokenType(user, tokenType);
-//        tokens.forEach(token -> token.setExpired(true));
-//        tokenRepository.saveAll(tokens);
-//    }
-//}
