@@ -19,7 +19,7 @@ public interface TokenRepository extends JpaRepository<ShepsToken, UUID> {
           \s""")
     Optional<ShepsToken> findByUserAndTokenAndTokenType(@Param("email") String email,
          @Param("token") String token, @Param("tokenType") TokenType tokenType);
-    Optional<ShepsToken> findByTokenAndTokenTypeAndExpiredFalse(String token, TokenType type);
+    Optional<ShepsToken> findByTokenAndTokenType(String token, TokenType type);
     Optional<ShepsToken> findByToken(String token);
     List<ShepsToken> findAllByUserAndTokenType(User user, TokenType tokenType);
     void deleteByToken(String token);

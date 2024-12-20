@@ -1,18 +1,20 @@
-package com.shepherd.sheps_project.services;
+package com.shepherd.sheps_project.services.auth;
 
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
+import com.shepherd.sheps_project.data.dtos.responses.EmailConfirmationResponse;
 import com.shepherd.sheps_project.data.dtos.responses.RegisterUserResponse;
-import com.shepherd.sheps_project.data.models.Gender;
-import com.shepherd.sheps_project.data.models.Role;
-import com.shepherd.sheps_project.data.models.User;
+import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
 import com.shepherd.sheps_project.services.email.MailSenderService;
 import com.shepherd.sheps_project.services.email.EmailValidationService;
 import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
+import com.shepherd.sheps_project.services.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.Set;
 
@@ -26,17 +28,22 @@ public class AuthServiceImpl implements AuthService {
     private final EmailValidationService emailValidationService;
     private final PasswordValidationService passwordValidationService;
     private final MailSenderService mailSenderService;
+    private final TokenService tokenService;
+    private static final int MAIL_EXPIRATION_TIME = 30;
+    private final SpringTemplateEngine templateEngine;
+
 
     @Override
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
-        validateEmail(email);
+//        validateEmail(email);
         validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
         log.info("User with the first name {} registered successfully", savedUser.getFirstName());
-//        todo implement send email verification
+        String token = tokenService.createToken(savedUser, TokenType.EMAIL_CONFIRMATION, MAIL_EXPIRATION_TIME);
+        sendVerificationMail(savedUser, token);
         return buildRegisterUserResponse(savedUser);
     }
 
@@ -67,6 +74,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    private void sendVerificationMail(User user, String token) {
+        String verificationLink = String.format("http://localhost:9090/verify?token=%s&email=%s", token, user.getEmail());
+        Context context = new Context();
+        context.setVariable("firstName", user.getFirstName());
+        context.setVariable("confirmationLink", verificationLink);
+        String htmlContent = templateEngine.process("email-confirmation", context);
+        log.info("Email content ready to be sent to {}", user.getEmail());
+        mailSenderService.sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent);
+    }
+
     private static RegisterUserResponse buildRegisterUserResponse(User savedUser) {
         return RegisterUserResponse.builder()
                 .message("User registered successfully")
@@ -77,6 +94,30 @@ public class AuthServiceImpl implements AuthService {
                 .gender(savedUser.getGender())
                 .roles(savedUser.getRoles())
                 .isEnabled(savedUser.isEnabled())
+                .build();
+    }
+
+    @Override
+    public EmailConfirmationResponse verifyEmail(String token, String email){
+        ShepsToken shepsToken = tokenService.validateToken(token, email, TokenType.EMAIL_CONFIRMATION);
+        User user = shepsToken.getUser();
+        if(!user.isEnabled()){
+            user.setEnabled(true);
+            User verifiedUser = userRepository.save(user);
+            tokenService.deleteToken(shepsToken);
+            return buildEmailConfirmationResponse(verifiedUser);
+        }
+        throw new UserIsAlreadyEnabledException("User is already verified");
+    }
+
+    private static EmailConfirmationResponse buildEmailConfirmationResponse(User user) {
+        return EmailConfirmationResponse.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .isEnabled(user.isEnabled())
+                .accessToken("")
+                .refreshToken("")
                 .build();
     }
 }

@@ -2,7 +2,7 @@ package com.shepherd.sheps_project.controllers;
 
 import com.shepherd.sheps_project.controllers.responses.BaseResponse;
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
-import com.shepherd.sheps_project.services.AuthService;
+import com.shepherd.sheps_project.services.auth.AuthService;
 import com.shepherd.sheps_project.services.email.EmailValidationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
