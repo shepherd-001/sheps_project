@@ -1,5 +1,6 @@
 package com.shepherd.sheps_project.data.dtos.requests;
 
+import com.shepherd.sheps_project.utils.ValidationMessage;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,24 +14,24 @@ import static com.shepherd.sheps_project.utils.RegexPattern.*;
 @Getter
 @Setter
 public class RegisterUserRequest {
-    @NotBlank(message = "First name is required")
-    @Pattern(message = "First name can only contain letters, apostrophes, and hyphens," +
-            " but cannot start or end with apostrophes or hyphens", regexp = NAME)
+    @NotBlank(message = ValidationMessage.BLANK_FIRST_NAME)
+    @Pattern(message = ValidationMessage.INVALID_FIRST_NAME, regexp = USER_NAME)
     private String firstName;
-    @NotBlank(message = "Last name is required")
-    @Pattern(message = "Last name can only contain letters, apostrophes, and hyphens," +
-            " but cannot start or end with apostrophes or hyphens", regexp = NAME)
+
+    @NotBlank(message = ValidationMessage.BLANK_LAST_NAME)
+    @Pattern(message = ValidationMessage.INVALID_LAST_NAME, regexp = USER_NAME)
     private String lastName;
-    @NotBlank(message = "Email address is required")
-    @Email(regexp = EMAIL, message = "Email address is invalid")
+
+    @NotBlank(message = ValidationMessage.BLANK_EMAIL)
+    @Email(regexp = EMAIL, message = ValidationMessage.INVALID_EMAIL)
     private String email;
-    @NotBlank(message = "Password is required")
-    @Pattern(regexp = PASSWORD, message = "Password must be between 8 and 16 characters" +
-    " long and include at least one lowercase letter, one uppercase letter, one number," +
-    " and one special character (e.g., @, #, $, %, ^, &, +, =, !, ...)")
+
+    @NotBlank(message = ValidationMessage.BLANK_PASSWORD)
+    @Pattern(regexp = PASSWORD, message = ValidationMessage.INVALID_PASSWORD)
     private String password;
-    @NotNull(message = "Gender is required")
+
+    @NotBlank(message = ValidationMessage.BLANK_GENDER)
     private String gender;
-    @NotNull(message = "Role is required")
+    @NotBlank(message = ValidationMessage.BLANK_ROLE)
     private String role;
 }

@@ -20,9 +20,10 @@ import java.io.UnsupportedEncodingException;
 public class MailSenderServiceImpl implements MailSenderService {
     private final JavaMailSender mailSender;
     @Value("${mail_from_email}")
-    private String email;
+    private String mailFromEmail;
     @Value("${mail_from_name}")
-    private String name;
+    private String mailFromName;
+
 
     @Override
     @Async
@@ -33,7 +34,7 @@ public class MailSenderServiceImpl implements MailSenderService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-            helper.setFrom(new InternetAddress(email, name));
+            helper.setFrom(new InternetAddress(mailFromEmail, mailFromName));
             helper.setSubject(subject);
             helper.setTo(to);
             helper.setText(htmlContent, true);
@@ -45,31 +46,5 @@ public class MailSenderServiceImpl implements MailSenderService {
             throw new MailSenderException(ex.getMessage());
         }
     }
-
-
-
-//    @Value("${mailersend_api_key}")
-//    private String apiKey;
-//
-//    @Override
-//    public void sendEmail(String to, String subject, String htmlContent) {
-//        Email email = new Email();
-//        email.setFrom("Sheps App", "shepsappproduct@gmail.com");
-//        email.setSubject(subject);
-//        email.setHtml(htmlContent);
-//        email.addRecipient("", to);
-//
-//        MailerSend mailerSend = new MailerSend();
-//        mailerSend.setToken(apiKey);
-//
-//        try{
-//            MailerSendResponse response =
-//                    mailerSend.emails().send(email);
-//            log.info("\n\nResponse Id: '{}',  Response status code: '{}',  Response to string: '{}' \n\n",
-//                    response.messageId, response.responseStatusCode, response.toString());
-//        } catch (MailerSendException ex) {
-//            throw new MailSenderException(ex.getMessage());
-//        }
-//    }
 }
 

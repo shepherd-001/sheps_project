@@ -123,4 +123,10 @@ public class GlobalExceptionHandler {
         log.error("Sheps token exception: {}", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleException(AuthenticationException ex) {
+        log.error("Login exception: {}", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
 }

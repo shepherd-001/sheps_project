@@ -1,7 +1,9 @@
 package com.shepherd.sheps_project.services.auth;
 
+import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
 import com.shepherd.sheps_project.data.dtos.responses.EmailConfirmationResponse;
+import com.shepherd.sheps_project.data.dtos.responses.LoginResponse;
 import com.shepherd.sheps_project.data.dtos.responses.RegisterUserResponse;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
@@ -121,5 +123,25 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken("")
                 .refreshToken("")
                 .build();
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest loginRequest) {
+        User user = getUserByEmail(loginRequest.getEmail());
+        if(!user.isEnabled())
+            throw new AuthenticationException("Please verify your email address before your login.");
+        else if(user.getPassword().equals(loginRequest.getPassword())){
+            return LoginResponse.builder()
+                    .message("User logged in successfully")
+                    .accessToken("access token")
+                    .refreshToken("refresh token")
+                    .build();
+        }
+        throw new AuthenticationException("Invalid email or password");
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                ()-> new ResourceNotFoundException("User with the provided email not found"));
     }
 }

@@ -42,10 +42,15 @@ public class TokenServiceImpl implements TokenService{
 
     @Override
     public ShepsToken validateToken(String token, String email, TokenType tokenType) {
+        if(token.isBlank())
+            throw new ShepsTokenException("Token is required");
+        if(email.isBlank())
+            throw new ShepsTokenException("Email address is required");
+
         ShepsToken shepsToken = tokenRepository.findByUserAndTokenAndTokenType(email, token, tokenType);
         if(shepsToken == null){
             log.info("Token not found");
-            throw new ShepsTokenException("Token is invalid");
+            throw new ShepsTokenException("Token is invalid or expired");
         }else if(shepsToken.getExpirationTime().isBefore(LocalDateTime.now())){
             log.info("Token is expired");
             throw new ShepsTokenException("Token is expired");

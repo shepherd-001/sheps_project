@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 9091
 logging:
   level:
     org.springframework.web: DEBUG
@@ -48,3 +48,4 @@ mailersend_api_key: ${MAILERSEND_API_KEY}
 zero_bounce_api_key: ${ZEROBOUNCE_API_KEY}
 zero_bounce_url: ${ZEROBOUNCE_URL}
 have_i_been_pawned_url: ${HAVE_I_BEEN_PAWNED_URL}
+

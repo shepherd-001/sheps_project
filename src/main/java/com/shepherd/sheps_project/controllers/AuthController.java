@@ -1,6 +1,7 @@
 package com.shepherd.sheps_project.controllers;
 
 import com.shepherd.sheps_project.controllers.responses.BaseResponse;
+import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
 import com.shepherd.sheps_project.services.auth.AuthService;
 import jakarta.validation.Valid;
@@ -27,11 +28,8 @@ public class AuthController {
         return ResponseEntity.ok().body(authService.verifyEmail(token, email));
     }
 
-//    @GetMapping("validate-email")
-//    public ResponseEntity<Object> signup(@RequestParam String email) {
-//        return ResponseEntity.ok(BaseResponse.
-//                build(emailValidationService.isValidEmail(email)));
-//    }
-//
-
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok().body(authService.login(loginRequest));
+    }
 }
