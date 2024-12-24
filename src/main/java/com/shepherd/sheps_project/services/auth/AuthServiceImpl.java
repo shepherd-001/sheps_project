@@ -1,9 +1,11 @@
 package com.shepherd.sheps_project.services.auth;
 
+import com.shepherd.sheps_project.data.dtos.requests.ChangePasswordRequest;
 import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
 import com.shepherd.sheps_project.data.dtos.responses.EmailConfirmationResponse;
 import com.shepherd.sheps_project.data.dtos.responses.LoginResponse;
+import com.shepherd.sheps_project.data.dtos.responses.PasswordResetResponse;
 import com.shepherd.sheps_project.data.dtos.responses.RegisterUserResponse;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
@@ -129,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         User user = getUserByEmail(loginRequest.getEmail());
         if(!user.isEnabled())
-            throw new AuthenticationException("Please verify your email address before your login.");
+            throw new AuthenticationException("Verify your email address before your proceed.");
         else if(user.getPassword().equals(loginRequest.getPassword())){
             return LoginResponse.builder()
                     .message("User logged in successfully")
@@ -143,5 +145,23 @@ public class AuthServiceImpl implements AuthService {
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
                 ()-> new ResourceNotFoundException("User with the provided email not found"));
+    }
+
+    @Override
+    public PasswordResetResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+        User user = getUserByEmail(changePasswordRequest.getEmail());
+        if(!user.isEnabled())
+            throw new AuthenticationException("Verify your email address before your proceed.");
+        else if(!user.getPassword().equals(changePasswordRequest.getOldPassword()))
+            throw new AuthenticationException("Invalid password");
+        else if(!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword()))
+            throw new AuthenticationException("Password do not match");
+        else {
+            user.setPassword(changePasswordRequest.getNewPassword());
+            userRepository.save(user);
+            return PasswordResetResponse.builder()
+                    .message("Password changed successfully")
+                    .build();
+        }
     }
 }
