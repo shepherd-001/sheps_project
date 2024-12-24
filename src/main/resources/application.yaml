@@ -1,5 +1,6 @@
 server:
-  port: 9091
+  port: ${PORT}
+
 logging:
   level:
     org.springframework.web: DEBUG
@@ -41,6 +42,7 @@ spring:
           writetimeout: 10000
 #        debug: true
 
+base_url: http://localhost:${PORT}
 mail_from_email: ${MAIL_FROM_EMAIL}
 mail_from_name: ${MAIL_FROM_NAME}
 mailersend_api_key: ${MAILERSEND_API_KEY}
@@ -48,4 +50,3 @@ mailersend_api_key: ${MAILERSEND_API_KEY}
 zero_bounce_api_key: ${ZEROBOUNCE_API_KEY}
 zero_bounce_url: ${ZEROBOUNCE_URL}
 have_i_been_pawned_url: ${HAVE_I_BEEN_PAWNED_URL}
-

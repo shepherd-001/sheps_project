@@ -3,10 +3,8 @@ package com.shepherd.sheps_project.services.auth;
 import com.shepherd.sheps_project.data.dtos.requests.ChangePasswordRequest;
 import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
 import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
-import com.shepherd.sheps_project.data.dtos.responses.EmailConfirmationResponse;
-import com.shepherd.sheps_project.data.dtos.responses.LoginResponse;
-import com.shepherd.sheps_project.data.dtos.responses.PasswordResetResponse;
-import com.shepherd.sheps_project.data.dtos.responses.RegisterUserResponse;
+import com.shepherd.sheps_project.data.dtos.requests.ResetPasswordRequest;
+import com.shepherd.sheps_project.data.dtos.responses.*;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
@@ -16,6 +14,7 @@ import com.shepherd.sheps_project.services.passwordServie.PasswordValidationServ
 import com.shepherd.sheps_project.services.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -35,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
     private final MailSenderService mailSenderService;
     private final TokenService tokenService;
     private static final int MAIL_EXPIRATION_TIME = 30;
+    @Value("${base_url}")
+    private String baseUrl;
     private final SpringTemplateEngine templateEngine;
 
 
@@ -80,13 +81,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void sendVerificationMail(User user, String token) {
-        String verificationLink = String.format("http://localhost:9090/verify?token=%s&email=%s", token, user.getEmail());
+
+        String verificationLink = "%s/verify?token=%s&email=%s".formatted(baseUrl, token, user.getEmail());
+//        String verificationLink = String.format("http://localhost:9090/verify?token=%s&email=%s", token, user.getEmail());
         Context context = new Context();
         context.setVariable("firstName", user.getFirstName());
         context.setVariable("confirmationLink", verificationLink);
         String htmlContent = templateEngine.process("email-confirmation", context);
         log.info("Email content ready to be sent to {}", user.getEmail());
-        CompletableFuture.runAsync(() -> mailSenderService.sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent));
+        CompletableFuture.runAsync(() -> mailSenderService
+                .sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent));
     }
 
     private static RegisterUserResponse buildRegisterUserResponse(User savedUser) {
@@ -148,20 +152,61 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public PasswordResetResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+    public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
         User user = getUserByEmail(changePasswordRequest.getEmail());
         if(!user.isEnabled())
             throw new AuthenticationException("Verify your email address before your proceed.");
         else if(!user.getPassword().equals(changePasswordRequest.getOldPassword()))
             throw new AuthenticationException("Invalid password");
+        else if(user.getPassword().equals(changePasswordRequest.getNewPassword()))
+            throw new AuthenticationException("New password cannot be the same as old password");
         else if(!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword()))
-            throw new AuthenticationException("Password do not match");
+            throw new AuthenticationException("Passwords do not match");
         else {
             user.setPassword(changePasswordRequest.getNewPassword());
             userRepository.save(user);
-            return PasswordResetResponse.builder()
+            return ChangePasswordResponse.builder()
                     .message("Password changed successfully")
                     .build();
         }
+    }
+
+    @Override
+    public String requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if(user != null && user.isEnabled()){
+            String token = tokenService.createToken(user, TokenType.RESET_PASSWORD, MAIL_EXPIRATION_TIME);
+            sendResetPasswordMail(user, token);
+            return getResetPasswordMessage();
+        }
+        return getResetPasswordMessage();
+    }
+
+    private void sendResetPasswordMail(User user, String token) {
+        String verificationLink = "%s/reset-password?token=%s&email=%s".formatted(baseUrl, token, user.getEmail());
+        Context context = new Context();
+        context.setVariable("firstName", user.getFirstName());
+        context.setVariable("resetPasswordLink", verificationLink);
+        String htmlContent = templateEngine.process("reset-password", context);
+        log.info("Reset password mail ready to be sent to {}", user.getEmail());
+        CompletableFuture.runAsync(() -> mailSenderService
+                .sendEmail(user.getEmail(), "Reset Your Password", htmlContent));
+    }
+
+    private static String getResetPasswordMessage(){
+        return "We’ve sent a password reset link to your email address. " +
+                "Please follow the instructions in the email to reset your password.";
+    }
+
+    @Override
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        ShepsToken shepsToken = tokenService
+                .validateToken(request.getToken(), request.getEmail(), TokenType.RESET_PASSWORD);
+        User user = shepsToken.getUser();
+        user.setPassword(request.getNewPassword());
+        tokenService.deleteToken(shepsToken);
+        return ResetPasswordResponse.builder()
+                .message("Password reset successful.")
+                .build();
     }
 }
