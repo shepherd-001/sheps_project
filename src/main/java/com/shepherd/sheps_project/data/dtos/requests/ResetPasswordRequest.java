@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ResetPasswordRequest {
-    @NotBlank(message = "Token is required")
+    @NotBlank(message = ValidationMessage.BLANK_TOKEN)
     private String token;
 
     @NotBlank(message = ValidationMessage.BLANK_EMAIL)

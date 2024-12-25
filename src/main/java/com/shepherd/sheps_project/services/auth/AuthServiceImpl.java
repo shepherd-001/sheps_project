@@ -1,9 +1,6 @@
 package com.shepherd.sheps_project.services.auth;
 
-import com.shepherd.sheps_project.data.dtos.requests.ChangePasswordRequest;
-import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
-import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
-import com.shepherd.sheps_project.data.dtos.requests.ResetPasswordRequest;
+import com.shepherd.sheps_project.data.dtos.requests.*;
 import com.shepherd.sheps_project.data.dtos.responses.*;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
@@ -107,8 +104,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public EmailConfirmationResponse verifyEmail(String token, String email){
-        ShepsToken shepsToken = tokenService.validateToken(token, email, TokenType.EMAIL_CONFIRMATION);
+    public EmailConfirmationResponse verifyEmail(EmailConfirmationRequest request){
+        ShepsToken shepsToken = tokenService.validateToken(request.getToken(), request.getEmail(), TokenType.EMAIL_CONFIRMATION);
         User user = shepsToken.getUser();
         if(!user.isEnabled()){
             user.setEnabled(true);
@@ -172,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String requestPasswordReset(String email) {
+    public ResetPasswordResponse requestPasswordReset(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
         if(user != null && user.isEnabled()){
             String token = tokenService.createToken(user, TokenType.RESET_PASSWORD, MAIL_EXPIRATION_TIME);
@@ -193,9 +190,11 @@ public class AuthServiceImpl implements AuthService {
                 .sendEmail(user.getEmail(), "Reset Your Password", htmlContent));
     }
 
-    private static String getResetPasswordMessage(){
-        return "We’ve sent a password reset link to your email address. " +
-                "Please follow the instructions in the email to reset your password.";
+    private static ResetPasswordResponse getResetPasswordMessage(){
+        return ResetPasswordResponse.builder()
+                .message("We’ve sent a password reset link to your email address. " +
+                "Please follow the instructions in the email to reset your password.")
+                .build();
     }
 
     @Override

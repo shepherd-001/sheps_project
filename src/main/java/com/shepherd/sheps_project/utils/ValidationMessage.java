@@ -8,6 +8,7 @@ public class ValidationMessage {
     public static final String BLANK_PASSWORD = "Password is required";
     public static final String BLANK_GENDER = "Gender is required";
     public static final String BLANK_ROLE = "Role is required";
+    public static final String BLANK_TOKEN = "Token is required";
 
     public static final String INVALID_FIRST_NAME = "First name can only contain letters, apostrophes, and hyphens, but cannot start or end with apostrophes or hyphens";
     public static final String INVALID_LAST_NAME = "Last name can only contain letters, apostrophes, and hyphens, but cannot start or end with apostrophes or hyphens";

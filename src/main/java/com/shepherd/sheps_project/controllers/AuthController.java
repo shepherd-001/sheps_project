@@ -1,10 +1,7 @@
 package com.shepherd.sheps_project.controllers;
 
 import com.shepherd.sheps_project.controllers.responses.BaseResponse;
-import com.shepherd.sheps_project.data.dtos.requests.ChangePasswordRequest;
-import com.shepherd.sheps_project.data.dtos.requests.LoginRequest;
-import com.shepherd.sheps_project.data.dtos.requests.RegisterUserRequest;
-import com.shepherd.sheps_project.data.dtos.requests.ResetPasswordRequest;
+import com.shepherd.sheps_project.data.dtos.requests.*;
 import com.shepherd.sheps_project.services.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +23,9 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Object> verifyEmail(@RequestParam String token, @RequestParam String email) {
+    public ResponseEntity<Object> verifyEmail(@RequestBody EmailConfirmationRequest emailConfirmationRequest) {
         return ResponseEntity.ok()
-                .body(BaseResponse.build(authService.verifyEmail(token, email)));
+                .body(BaseResponse.build(authService.verifyEmail(emailConfirmationRequest)));
     }
 
     @PostMapping("/login")
