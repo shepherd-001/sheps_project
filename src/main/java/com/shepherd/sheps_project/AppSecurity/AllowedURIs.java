@@ -20,4 +20,7 @@ public class AllowedURIs {
                 "/swagger-ui.html"
         };
     }
+    private AllowedURIs() {
+    throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 }
