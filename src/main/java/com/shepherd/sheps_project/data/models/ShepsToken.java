@@ -13,8 +13,10 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ShepsToken extends BaseModel{
-    @Column(unique = true)
+    @Column(unique = true, columnDefinition = "Text")
     private String token;
+    @Column(unique = true, columnDefinition = "Text")
+    private String refreshToken;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

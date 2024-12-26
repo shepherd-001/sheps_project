@@ -51,5 +51,5 @@ zero_bounce_url: ${ZEROBOUNCE_URL}
 have_i_been_pawned_url: ${HAVE_I_BEEN_PAWNED_URL}
 
 jwt_secret_key: ${JWT_SECRET_KEY}
-jwt_expiration: ${JWT_EXPIRATION}
+jwt_access_expiration: ${JWT_EXPIRATION}
 jwt_refresh_expiration: ${JWT_REFRESH_EXPIRATION}
