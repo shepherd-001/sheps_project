@@ -1,8 +1,8 @@
 package com.shepherd.sheps_project.AppSecurity;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -18,9 +18,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     private static final String UNAUTHORIZED_MESSAGE_FORMAT = "{\"error\": \"Unauthorized\", \"message\": \"%s\"}";
     @Override
     public void commence(
-            @NotNull HttpServletRequest request,
-            @NotNull HttpServletResponse response,
-            @NotNull AuthenticationException authException) throws IOException {
+            @Nonnull HttpServletRequest request,
+            @Nonnull HttpServletResponse response,
+            @Nonnull AuthenticationException authException) throws IOException {
 
         log.error("Unauthorized access attempt: ", authException);
         if(!response.isCommitted())

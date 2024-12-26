@@ -23,6 +23,7 @@ public class ShepsToken extends BaseModel{
     @Enumerated(EnumType.STRING)
     private TokenType tokenType;
     private boolean isExpired;
+    private boolean isRevoked;
     private final LocalDateTime created = LocalDateTime.now();
     private LocalDateTime expirationTime;
 
