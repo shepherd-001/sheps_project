@@ -2,7 +2,6 @@ package com.shepherd.sheps_project.data.repository;
 
 import com.shepherd.sheps_project.data.models.ShepsToken;
 import com.shepherd.sheps_project.data.models.TokenType;
-import com.shepherd.sheps_project.data.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +20,6 @@ public interface TokenRepository extends JpaRepository<ShepsToken, UUID> {
          @Param("token") String token, @Param("tokenType") TokenType tokenType);
     Optional<ShepsToken> findByToken(String token);
     Optional<ShepsToken> findByTokenAndTokenType(String token, TokenType type);
-    List<ShepsToken> findAllByUserAndTokenType(User user, TokenType tokenType);
+    List<ShepsToken> findAllByUserIdAndTokenType(String userId, TokenType tokenType);
     void deleteByToken(String token);
 }
