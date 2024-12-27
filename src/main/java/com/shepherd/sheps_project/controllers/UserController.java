@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,14 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/userdetails/id")
-    public ResponseEntity<Object> getUserById(@RequestParam String userId){
+    @GetMapping("/userdetails")
+    public ResponseEntity<Object> getUserDetails(){
         return ResponseEntity.ok()
-                .body(BaseResponse.build(userService.getUserById(userId)));
-    }
-    @GetMapping("/userdetails/email")
-    public ResponseEntity<Object> getUserByEmail(@RequestParam String userEmail){
-        return ResponseEntity.ok()
-                .body(BaseResponse.build(userService.getUserByEmail(userEmail)));
+                .body(BaseResponse.build(userService.getAuthenticatedUser()));
     }
 }

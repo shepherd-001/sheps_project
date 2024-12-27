@@ -1,6 +1,6 @@
 package com.shepherd.sheps_project.utils;
 
-public class ValidationMessage {
+public final class ValidationMessage {
 
     public static final String BLANK_FIRST_NAME = "First name is required";
     public static final String BLANK_LAST_NAME = "Last name is required";
