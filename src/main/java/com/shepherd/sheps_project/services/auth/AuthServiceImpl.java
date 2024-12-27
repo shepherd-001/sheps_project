@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+
+import static com.shepherd.sheps_project.utils.AppUtils.getCurrentUser;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
@@ -156,7 +158,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
-        User user = getUserByEmail(changePasswordRequest.getEmail());
+        User user = getCurrentUser();
         checkIfCurrentPasswordIsCorrect(changePasswordRequest.getCurrentPassword(), user.getPassword());
         checkIfCurrentAndNewPasswordAreNotTheSame(changePasswordRequest.getCurrentPassword(), changePasswordRequest.getNewPassword());
         checkIfTwoPasswordAreTheSame(changePasswordRequest.getNewPassword(), changePasswordRequest.getConfirmPassword());
