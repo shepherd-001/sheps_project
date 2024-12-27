@@ -1,24 +1,25 @@
 package com.shepherd.sheps_project.services.auth;
 
+import com.shepherd.sheps_project.security.JwtService;
 import com.shepherd.sheps_project.data.dtos.requests.*;
 import com.shepherd.sheps_project.data.dtos.responses.*;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
-import com.shepherd.sheps_project.services.email.MailSenderService;
+import com.shepherd.sheps_project.services.email.MailNotificationService;
 import com.shepherd.sheps_project.services.email.EmailValidationService;
 import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
 import com.shepherd.sheps_project.services.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
@@ -28,12 +29,12 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final EmailValidationService emailValidationService;
     private final PasswordValidationService passwordValidationService;
-    private final MailSenderService mailSenderService;
+    private final MailNotificationService notificationService;
     private final TokenService tokenService;
-    private static final int MAIL_EXPIRATION_TIME = 30;
-    @Value("${base_url}")
-    private String baseUrl;
-    private final SpringTemplateEngine templateEngine;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private static final int MAIL_EXPIRATION_TIME_IN_MIN = 30;
 
 
     @Override
@@ -45,8 +46,8 @@ public class AuthServiceImpl implements AuthService {
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
         log.info("User with the first name {} registered successfully", savedUser.getFirstName());
-        String token = tokenService.createToken(savedUser, TokenType.EMAIL_CONFIRMATION, MAIL_EXPIRATION_TIME);
-        sendVerificationMail(savedUser, token);
+        String token = tokenService.saveToken(savedUser, TokenType.EMAIL_CONFIRMATION, MAIL_EXPIRATION_TIME_IN_MIN);
+        notificationService.sendVerificationMail(savedUser, token);
         return buildRegisterUserResponse(savedUser);
     }
 
@@ -66,28 +67,15 @@ public class AuthServiceImpl implements AuthService {
                     , BAD_REQUEST.value());
     }
 
-    private static User buildRegisterUserRequest(RegisterUserRequest registrationRequest) {
+    private User buildRegisterUserRequest(RegisterUserRequest request) {
         return User.builder()
-                .firstName(registrationRequest.getFirstName().trim())
-                .lastName(registrationRequest.getLastName().trim())
-                .email(registrationRequest.getEmail().toLowerCase().trim())
-                .password(registrationRequest.getPassword())
-                .gender(Gender.valueOf(registrationRequest.getGender().toUpperCase().trim()))
-                .roles(Set.of(Role.valueOf(registrationRequest.getRole().toUpperCase().trim())))
+                .firstName(request.getFirstName().trim())
+                .lastName(request.getLastName().trim())
+                .email(request.getEmail().toLowerCase().trim())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .gender(Gender.valueOf(request.getGender().toUpperCase().trim()))
+                .roles(Set.of(Role.valueOf(request.getRole().toUpperCase().trim())))
                 .build();
-    }
-
-    private void sendVerificationMail(User user, String token) {
-
-        String verificationLink = "%s/verify?token=%s&email=%s".formatted(baseUrl, token, user.getEmail());
-//        String verificationLink = String.format("http://localhost:9090/verify?token=%s&email=%s", token, user.getEmail());
-        Context context = new Context();
-        context.setVariable("firstName", user.getFirstName());
-        context.setVariable("confirmationLink", verificationLink);
-        String htmlContent = templateEngine.process("email-confirmation", context);
-        log.info("Email content ready to be sent to {}", user.getEmail());
-        CompletableFuture.runAsync(() -> mailSenderService
-                .sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent));
     }
 
     private static RegisterUserResponse buildRegisterUserResponse(User savedUser) {
@@ -111,36 +99,54 @@ public class AuthServiceImpl implements AuthService {
             user.setEnabled(true);
             User verifiedUser = userRepository.save(user);
             tokenService.deleteToken(shepsToken);
-            return buildEmailConfirmationResponse(verifiedUser);
+            String accessToken = jwtService.generateAccessToken(user.getEmail());
+            String refreshToken = jwtService.generateRefreshToken(user.getPassword());
+            buildAndSaveToken(verifiedUser, accessToken, refreshToken);
+            return buildEmailConfirmationResponse(verifiedUser, accessToken, refreshToken);
         }
         throw new UserIsAlreadyEnabledException("User is already verified");
     }
 
-    private static EmailConfirmationResponse buildEmailConfirmationResponse(User user) {
+    private void buildAndSaveToken(User user, String accessToken, String refreshToken) {
+        ShepsToken shepsToken = ShepsToken.builder()
+                .token(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType(TokenType.JWT)
+                .user(user)
+                .isRevoked(false)
+                .isExpired(false)
+                .build();
+        tokenService.saveToken(shepsToken);
+    }
+
+    private EmailConfirmationResponse buildEmailConfirmationResponse(User user, String accessToken, String refreshToken) {
         return EmailConfirmationResponse.builder()
                 .message("User verified successfully")
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .isEnabled(user.isEnabled())
-                .accessToken("")
-                .refreshToken("")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = getUserByEmail(loginRequest.getEmail());
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        String userEmail = authentication.getName();
+        String accessToken = jwtService.generateAccessToken(userEmail);
+        String refreshToken = jwtService.generateRefreshToken(userEmail);
+        User user = getUserByEmail(userEmail);
         if(!user.isEnabled())
             throw new AuthenticationException("Verify your email address before your proceed.");
-        else if(user.getPassword().equals(loginRequest.getPassword())){
-            return LoginResponse.builder()
+        buildAndSaveToken(user, accessToken, refreshToken);
+        return LoginResponse.builder()
                     .message("User logged in successfully")
-                    .accessToken("access token")
-                    .refreshToken("refresh token")
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
                     .build();
-        }
-        throw new AuthenticationException("Invalid email or password");
     }
 
     private User getUserByEmail(String email) {
@@ -151,43 +157,45 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
         User user = getUserByEmail(changePasswordRequest.getEmail());
-        if(!user.isEnabled())
-            throw new AuthenticationException("Verify your email address before your proceed.");
-        else if(!user.getPassword().equals(changePasswordRequest.getOldPassword()))
-            throw new AuthenticationException("Invalid password");
-        else if(user.getPassword().equals(changePasswordRequest.getNewPassword()))
-            throw new AuthenticationException("New password cannot be the same as old password");
-        else if(!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword()))
-            throw new AuthenticationException("Passwords do not match");
-        else {
-            user.setPassword(changePasswordRequest.getNewPassword());
-            userRepository.save(user);
-            return ChangePasswordResponse.builder()
-                    .message("Password changed successfully")
-                    .build();
-        }
+        checkIfCurrentPasswordIsCorrect(changePasswordRequest.getCurrentPassword(), user.getPassword());
+        checkIfCurrentAndNewPasswordAreNotTheSame(changePasswordRequest.getCurrentPassword(), changePasswordRequest.getNewPassword());
+        checkIfTwoPasswordAreTheSame(changePasswordRequest.getNewPassword(), changePasswordRequest.getConfirmPassword());
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        User savedUser = userRepository.save(user);
+        String accessToken = jwtService.generateAccessToken(savedUser.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
+        buildAndSaveToken(savedUser, accessToken, refreshToken);
+        return ChangePasswordResponse.builder()
+                .message("Password changed successfully")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    private void checkIfCurrentPasswordIsCorrect(String currentPassword, String appUserPassword) {
+        if(!passwordEncoder.matches(currentPassword, appUserPassword))
+            throw new BadCredentialsException("Invalid password");
+    }
+
+    private void checkIfCurrentAndNewPasswordAreNotTheSame(String currentPassword, String newPassword){
+        if(currentPassword.equals(newPassword))
+            throw new BadCredentialsException("New password cannot be the same as old password");
+    }
+
+    private void checkIfTwoPasswordAreTheSame(String newPassword, String confirmPassword){
+        if(!newPassword.equals(confirmPassword))
+            throw new BadCredentialsException("Password do not match");
     }
 
     @Override
     public ResetPasswordResponse requestPasswordReset(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        if(user != null && user.isEnabled()){
-            String token = tokenService.createToken(user, TokenType.RESET_PASSWORD, MAIL_EXPIRATION_TIME);
-            sendResetPasswordMail(user, token);
-            return getResetPasswordMessage();
-        }
-        return getResetPasswordMessage();
-    }
-
-    private void sendResetPasswordMail(User user, String token) {
-        String verificationLink = "%s/reset-password?token=%s&email=%s".formatted(baseUrl, token, user.getEmail());
-        Context context = new Context();
-        context.setVariable("firstName", user.getFirstName());
-        context.setVariable("resetPasswordLink", verificationLink);
-        String htmlContent = templateEngine.process("reset-password", context);
-        log.info("Reset password mail ready to be sent to {}", user.getEmail());
-        CompletableFuture.runAsync(() -> mailSenderService
-                .sendEmail(user.getEmail(), "Reset Your Password", htmlContent));
+        return userRepository.findByEmail(email)
+                .filter(User::isEnabled)
+                .map(user -> {
+                    String token = tokenService.saveToken(user, TokenType.RESET_PASSWORD, MAIL_EXPIRATION_TIME_IN_MIN);
+                    notificationService.sendResetPasswordMail(user, token);
+                    return getResetPasswordMessage();
+                }).orElse(getResetPasswordMessage());
     }
 
     private static ResetPasswordResponse getResetPasswordMessage(){
@@ -202,7 +210,7 @@ public class AuthServiceImpl implements AuthService {
         ShepsToken shepsToken = tokenService
                 .validateToken(request.getToken(), request.getEmail(), TokenType.RESET_PASSWORD);
         User user = shepsToken.getUser();
-        user.setPassword(request.getNewPassword());
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         tokenService.deleteToken(shepsToken);
         return ResetPasswordResponse.builder()
                 .message("Password reset successful.")

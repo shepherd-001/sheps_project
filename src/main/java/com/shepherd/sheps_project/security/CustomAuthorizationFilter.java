@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity;
+package com.shepherd.sheps_project.security;
 
 import com.shepherd.sheps_project.data.repository.TokenRepository;
 import com.shepherd.sheps_project.exceptions.ShepsException;
@@ -64,7 +64,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private void authenticateUser(HttpServletRequest request, String userEmail, String jwtToken) {
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if(jwtService.isValidToken(jwtToken, userEmail))
+            if(jwtService.isValidToken(jwtToken, userEmail) && userDetails.isEnabled())
                 setAuthentication(request, userDetails);
         }
     }

@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity;
+package com.shepherd.sheps_project.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -39,12 +40,12 @@ public class JwtService {
                 .getBody();
     }
 
-    public String generateAccessToken(Map<String, Object> claims, String email){
-        return buildJwtToken(claims, email, accessTokenExpiration);
+    public String generateAccessToken(String email){
+        return buildJwtToken(new HashMap<>(), email, accessTokenExpiration);
     }
 
-    public String generateRefreshToken(Map<String, Object> claims, String email){
-        return buildJwtToken(claims, email, refreshTokenExpiration);
+    public String generateRefreshToken(String email){
+        return buildJwtToken(new HashMap<>(), email, refreshTokenExpiration);
     }
 
     private String buildJwtToken(Map<String, Object> claims, String email, long tokenExpiration){

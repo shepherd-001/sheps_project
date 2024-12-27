@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -149,5 +150,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleException(IOException ex) {
         log.error("IO exception: {}", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiError> handleException(org.springframework.security.core.AuthenticationException ex) {
+        log.error("Authentication exception: {}", ex.getMessage());
+            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 }

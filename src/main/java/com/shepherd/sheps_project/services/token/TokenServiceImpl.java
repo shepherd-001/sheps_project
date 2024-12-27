@@ -21,7 +21,7 @@ public class TokenServiceImpl implements TokenService{
 
 
     @Override
-    public String createToken(User user, TokenType tokenType, int expirationTimeInMinutes) {
+    public String saveToken(User user, TokenType tokenType, int expirationTimeInMinutes) {
         String token = RandomStringGenerator.generateRandomString(TOKEN_LENGTH);
         ShepsToken shepsToken = ShepsToken.builder()
                 .user(user)
@@ -37,8 +37,8 @@ public class TokenServiceImpl implements TokenService{
     }
 
     @Override
-    public ShepsToken createToken(ShepsToken shepsToken) {
-        return null;
+    public void saveToken(ShepsToken shepsToken) {
+        tokenRepository.save(shepsToken);
     }
 
     @Override

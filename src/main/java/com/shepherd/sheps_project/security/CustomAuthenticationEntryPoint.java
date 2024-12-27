@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity;
+package com.shepherd.sheps_project.security;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;

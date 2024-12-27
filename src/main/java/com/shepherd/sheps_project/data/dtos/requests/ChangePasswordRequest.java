@@ -21,7 +21,7 @@ public class ChangePasswordRequest {
 
     @NotBlank(message = ValidationMessage.BLANK_PASSWORD)
     @Pattern(message = ValidationMessage.INVALID_PASSWORD, regexp = RegexPattern.PASSWORD)
-    private String oldPassword;
+    private String currentPassword;
 
     @NotBlank(message = ValidationMessage.BLANK_PASSWORD)
     @Pattern(message = ValidationMessage.INVALID_PASSWORD, regexp = RegexPattern.PASSWORD)

@@ -1,12 +1,9 @@
-package com.shepherd.sheps_project.AppSecurity.securityConfig;
+package com.shepherd.sheps_project.security.securityConfig;
 
-import com.shepherd.sheps_project.AppSecurity.AllowedURIs;
-import com.shepherd.sheps_project.AppSecurity.CustomAuthenticationEntryPoint;
-import com.shepherd.sheps_project.AppSecurity.CustomAuthorizationFilter;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import com.shepherd.sheps_project.security.AllowedURIs;
+import com.shepherd.sheps_project.security.CustomAuthenticationEntryPoint;
+import com.shepherd.sheps_project.security.CustomAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,7 +21,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.security.Key;
 import java.util.List;
 
 @Configuration
@@ -35,8 +31,6 @@ import java.util.List;
 )
 @RequiredArgsConstructor
 public class SecurityConfig {
-    @Value("${jwt_secret_key}")
-    private String jwtSecretKey;
     private final CustomAuthorizationFilter authorizationFilter;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final LogoutHandler logoutHandler;
@@ -51,8 +45,8 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(handler ->
-                        handler.authenticationEntryPoint(authenticationEntryPoint))
+//                .exceptionHandling(handler ->
+//                        handler.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
@@ -62,7 +56,7 @@ public class SecurityConfig {
                                 .authenticated())
                 .addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout ->
-                        logout.logoutUrl("/*/logout")
+                        logout.logoutUrl("/api/v1/auth/logout")
                                 .addLogoutHandler(logoutHandler)
                                 .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())))
                 .build();
@@ -82,11 +76,5 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public Key signInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

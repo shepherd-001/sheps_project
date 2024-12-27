@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity;
+package com.shepherd.sheps_project.security;
 
 public class AllowedURIs {
     public static String[] allowedEndpoints() {
@@ -16,7 +16,7 @@ public class AllowedURIs {
                 "/configuration/ui",
                 "/configuration/security",
                 "/swagger-ui/**",
-                "webjars/**",
+                "/webjars/**",
                 "/swagger-ui.html"
         };
     }

@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity.securityConfig;
+package com.shepherd.sheps_project.security.securityConfig;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;

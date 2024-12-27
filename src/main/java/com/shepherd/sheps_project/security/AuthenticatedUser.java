@@ -1,4 +1,4 @@
-package com.shepherd.sheps_project.AppSecurity;
+package com.shepherd.sheps_project.security;
 
 import com.shepherd.sheps_project.data.models.User;
 import lombok.Builder;
