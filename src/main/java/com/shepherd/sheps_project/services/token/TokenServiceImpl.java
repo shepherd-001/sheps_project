@@ -31,6 +31,9 @@ public class TokenServiceImpl implements TokenService{
                 .isRevoked(false)
                 .expirationTime(LocalDateTime.now().plusMinutes(expirationTimeInMinutes))
                 .build();
+        var tokens = tokenRepository.findAllByUserIdAndTokenType(user.getId(), tokenType);
+        tokenRepository.deleteAll(tokens);
+
         tokenRepository.save(shepsToken);
         log.info("Created a new token");
         return token;
