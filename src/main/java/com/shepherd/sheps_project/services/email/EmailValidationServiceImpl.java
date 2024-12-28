@@ -53,33 +53,6 @@ public class EmailValidationServiceImpl implements EmailValidationService{
         private String zipcode;
         @JsonProperty("processed_at")
         private String processedAt;
-
-        @Override
-        public String toString() {
-            return "EmailValidationResponse{" +
-                    "address='" + address + '\'' +
-                    ", status='" + status + '\'' +
-                    ", subStatus='" + subStatus + '\'' +
-                    ", freeEmail=" + freeEmail +
-                    ", didYouMean='" + didYouMean + '\'' +
-                    ", account='" + account + '\'' +
-                    ", domain='" + domain + '\'' +
-                    ", domainAgeDays='" + domainAgeDays + '\'' +
-                    ", activeInDays='" + activeInDays + '\'' +
-                    ", smtpProvider='" + smtpProvider + '\'' +
-                    ", mxRecord='" + mxRecord + '\'' +
-                    ", mxFound=" + mxFound +
-                    ", firstname='" + firstname + '\'' +
-                    ", lastname='" + lastname + '\'' +
-                    ", gender='" + gender + '\'' +
-                    ", country='" + country + '\'' +
-                    ", region='" + region + '\'' +
-                    ", city='" + city + '\'' +
-                    ", zipcode='" + zipcode + '\'' +
-                    ", processedAt='" + processedAt + '\'' +
-                    '}';
-        }
-
     }
 
     @Value("${zero_bounce_api_key}")
@@ -107,16 +80,15 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     public boolean isValidEmail(String email) {
         try{
             email = email.toLowerCase().trim();
-            log.info("\n\nInitiating email validation\n");
+            log.info("::::: Initiating email validation :::::");
             checkEmailNotBlank(email);
             isDisposableEmail(email);
             String url = buildValidationUrl(email);
-            log.info("\n\nValidating email the email address\n");
+            log.info("::::: Validating email address {} :::::", email);
             EmailValidationResponse emailValidationResponse = restTemplate.getForObject(url, EmailValidationResponse.class);
-            log.info("\n\nEmail validation response: {}\n", emailValidationResponse.toString());
             return isEmailValidAndAllowed(Objects.requireNonNull(emailValidationResponse));
         }catch (HttpClientErrorException | HttpServerErrorException ex){
-            log.error("\n\nError during email validation: {}\n", ex.getMessage());
+            log.info("::::: Error during email validation {} :::::", ex.getMessage());
             throw new EmailValidationException(ex.getMessage());
         }
     }
@@ -127,12 +99,12 @@ public class EmailValidationServiceImpl implements EmailValidationService{
 
        return switch (status) {
             case "valid" -> {
-                log.info("\n\nValid email-> sub status: '{}'\n", subStatus);
+                log.info("::::: Valid email address -> sub status: {} :::::", subStatus);
                 yield true;
             }
             case "do_not_mail" -> handleDoNoMailSubStatus(subStatus);
             default -> {
-                log.info("\n\nInvalid email-> sub status: '{}'\n", subStatus);
+                log.info("::::: Invalid email address -> sub status: {} :::::", subStatus);
                 throw new EmailValidationException("Error validating email address." +
                         " Try again with a valid email address");
             }
@@ -142,15 +114,15 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     private static boolean handleDoNoMailSubStatus(String subStatus) {
         return switch (subStatus) {
             case "role_based", "role_based_catch_all" -> {
-                log.info("\n\nValid email -> status: 'do_not_mail' sub status: '{}'\n",subStatus);
+                log.info("::::: Valid email address -> status: 'do_not_mail' sub status: {} :::::", subStatus);
                 yield true;
             }
             case "disposable" -> {
-                log.error("\n\nThe email address entered is disposable\n");
+                log.error("::::: The email address entered is disposable :::::");
                 throw new EmailValidationException("Disposable email address is not allowed");
             }
             default -> {
-                log.error("\n\nUnacceptable email address with sub status: {}\n", subStatus);
+                log.error("::::: Unacceptable email address with sub status: {} :::::", subStatus);
                 throw new EmailValidationException("Unacceptable email address. Try again with a valid email address");
             }
         };
@@ -164,7 +136,7 @@ public class EmailValidationServiceImpl implements EmailValidationService{
     private static void isDisposableEmail(String email){
         String domain = extractDomainFromEmail(email.trim());
         if(DISPOSABLE_EMAIL_DOMAINS.contains(domain)){
-            log.warn("\n\nDisposable email address\n");
+            log.error("::::: Disposable email address :::::");
             throw new EmailValidationException("Disposable email address is not allowed");
         }
     }

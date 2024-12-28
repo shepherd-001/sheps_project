@@ -26,7 +26,7 @@ public class MailNotificationServiceImpl implements MailNotificationService{
         context.setVariable("firstName", user.getFirstName());
         context.setVariable("confirmationLink", verificationLink);
         String htmlContent = templateEngine.process("email-confirmation", context);
-        log.info("Email content ready to be sent to {}", user.getEmail());
+        log.info("::::: Verification mail ready to be sent to {} :::::", user.getEmail());
         CompletableFuture.runAsync(() -> mailSenderService
                 .sendEmail(user.getEmail(), "Confirm Your Email Address", htmlContent));
 
@@ -39,7 +39,7 @@ public class MailNotificationServiceImpl implements MailNotificationService{
         context.setVariable("firstName", user.getFirstName());
         context.setVariable("resetPasswordLink", verificationLink);
         String htmlContent = templateEngine.process("reset-password", context);
-        log.info("Reset password mail ready to be sent to {}", user.getEmail());
+        log.info("::::: Reset password mail ready to be sent to {} :::::", user.getEmail());
         CompletableFuture.runAsync(() -> mailSenderService
                 .sendEmail(user.getEmail(), "Reset Your Password", htmlContent));
     }

@@ -1,6 +1,6 @@
 package com.shepherd.sheps_project.security;
 
-public class AllowedURIs {
+public final class AllowedURIs {
     public static String[] allowedEndpoints() {
         return new String[]{
                 "/api/v1/auth/signup",

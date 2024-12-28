@@ -22,6 +22,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private static final int NUMBER_OF_ITEMS_PER_PAGE = 10;
+    private static final String SORT_BY_CREATED_AT = "createdAt";
 
     @Override
     public UserResponse getAuthenticatedUser() {
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService{
     }
 
     private Pageable findAllUsersPageRequest(int pageNumber){
-        return AppUtils.createPageRequest(pageNumber, NUMBER_OF_ITEMS_PER_PAGE, "createdAt", Sort.Direction.DESC);
+        return AppUtils.createPageRequest(pageNumber, NUMBER_OF_ITEMS_PER_PAGE, SORT_BY_CREATED_AT, Sort.Direction.DESC);
     }
 
 

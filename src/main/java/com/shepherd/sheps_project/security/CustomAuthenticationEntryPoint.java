@@ -22,10 +22,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             @Nonnull HttpServletResponse response,
             @Nonnull AuthenticationException authException) throws IOException {
 
-        log.error("Unauthorized access attempt: ", authException);
+        log.error("::::: Unauthorized access attempt: {} :::::", authException.getMessage());
         if(!response.isCommitted())
             prepareUnauthorizedResponse(response, authException);
-        else log.warn("Unauthorized request received, but response has already been committed.");
+        else log.warn("::::: Unauthorized request received, but response has already been committed. :::::");
     }
 
     private void prepareUnauthorizedResponse(HttpServletResponse response, AuthenticationException authException) throws IOException {

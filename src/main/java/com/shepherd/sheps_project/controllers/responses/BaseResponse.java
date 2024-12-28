@@ -1,6 +1,7 @@
 package com.shepherd.sheps_project.controllers.responses;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 public class BaseResponse<T> {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
     private boolean isSuccessful;
     @JsonFormat(pattern = "HH:mm:ss, dd-MM-yyyy")

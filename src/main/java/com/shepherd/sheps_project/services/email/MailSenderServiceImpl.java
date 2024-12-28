@@ -29,7 +29,7 @@ public class MailSenderServiceImpl implements MailSenderService {
     @Async
     public void sendEmail(String to, String subject, String htmlContent) {
         try {
-            log.info("Initiating send email notification to {}", to);
+            log.info("::::: Initiating send email notification to {} :::::", to);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -40,9 +40,9 @@ public class MailSenderServiceImpl implements MailSenderService {
             helper.setText(htmlContent, true);
             mailSender.send(mimeMessage);
 
-            log.info("Email notification sent to {}", to);
+            log.info("::::: Email notification sent to {} :::::", to);
         } catch (MessagingException | UnsupportedEncodingException ex) {
-            log.error("Unable to send email to '{}'.  Error:: {}", to, ex.getMessage());
+            log.error("::::: Unable to send email to '{}'.  Error: '{}' :::::", to, ex.getMessage());
             throw new MailSenderException(ex.getMessage());
         }
     }

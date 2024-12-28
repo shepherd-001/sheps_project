@@ -42,7 +42,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 authenticateUser(request, userEmail, jwtToken);
             }
         }catch (Exception ex){
-            log.error("Token validation failed: {}", ex.getMessage());
+            log.error("::::: Token validation failed: {} :::::", ex.getMessage());
             throw new ShepsException(ex.getMessage());
         }
         filterChain.doFilter(request, response);

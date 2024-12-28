@@ -32,13 +32,13 @@ public class PasswordValidationServiceImpl implements PasswordValidationService{
 
         String apiUrl = String.format("%s/%s", haveIBeenPawnedUrl, prefix);
         try{
-            log.info("\n\nChecking password breach\n");
+            log.info("::::: Checking password breach :::::");
             ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
             if(response.getStatusCode() == HttpStatus.OK && response.getBody() != null){
                 return response.getBody().contains(suffix);
             }
         }catch (HttpClientErrorException ex){
-            log.error("\n\nError occurred during password breach check: {}\n", ex.getMessage());
+            log.error("::::: Error occurred during password breach check: {} :::::", ex.getMessage());
             handleHttpError(ex);
         }
         return false;

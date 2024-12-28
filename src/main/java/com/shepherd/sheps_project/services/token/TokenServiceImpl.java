@@ -22,6 +22,8 @@ public class TokenServiceImpl implements TokenService{
 
     @Override
     public String saveToken(User user, TokenType tokenType, int expirationTimeInMinutes) {
+        log.info("::::: Initiating the creation of new token :::::");
+
         String token = RandomStringGenerator.generateRandomString(TOKEN_LENGTH);
         ShepsToken shepsToken = ShepsToken.builder()
                 .user(user)
@@ -35,7 +37,7 @@ public class TokenServiceImpl implements TokenService{
         tokenRepository.deleteAll(tokens);
 
         tokenRepository.save(shepsToken);
-        log.info("Created a new token");
+        log.info("::::: Created a new token :::::");
         return token;
     }
 
@@ -48,10 +50,10 @@ public class TokenServiceImpl implements TokenService{
     public ShepsToken validateToken(String token, String email, TokenType tokenType) {
         ShepsToken shepsToken = tokenRepository.findByUserAndTokenAndTokenType(email, token, tokenType);
         if(shepsToken == null){
-            log.info("Token not found");
+            log.info("::::: Token not found :::::");
             throw new ShepsTokenException("Token is invalid or expired");
         }else if(shepsToken.getExpirationTime().isBefore(LocalDateTime.now())){
-            log.info("Token is expired");
+            log.info("::::: Token is expired :::::");
             throw new ShepsTokenException("Token is expired");
         }
         return shepsToken;
@@ -60,7 +62,7 @@ public class TokenServiceImpl implements TokenService{
     @Override
     public void deleteToken(ShepsToken shepsToken) {
         tokenRepository.delete(shepsToken);
-        log.info("Deleted a token");
+        log.info("::::: Deleted a token :::::");
     }
 }
 

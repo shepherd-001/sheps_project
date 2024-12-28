@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
 //        validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
-        log.info("User with the first name {} registered successfully", savedUser.getFirstName());
+        log.info("::::: User with the first name {} registered successfully :::::", savedUser.getFirstName());
         String token = tokenService.saveToken(savedUser, TokenType.EMAIL_CONFIRMATION, MAIL_EXPIRATION_TIME_IN_MIN);
         notificationService.sendVerificationMail(savedUser, token);
         return buildRegisterUserResponse(savedUser);
@@ -106,7 +106,7 @@ public class AuthServiceImpl implements AuthService {
             buildAndSaveToken(verifiedUser, accessToken, refreshToken);
             return buildEmailConfirmationResponse(verifiedUser, accessToken, refreshToken);
         }
-        throw new UserIsAlreadyEnabledException("User is already verified");
+        throw new UserAlreadyEnabledException("User is already verified");
     }
 
     private void buildAndSaveToken(User user, String accessToken, String refreshToken) {
@@ -142,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtService.generateRefreshToken(userEmail);
         User user = getUserByEmail(userEmail);
         if(!user.isEnabled())
-            throw new AuthenticationException("Verify your email address before your proceed.");
+            throw new AuthenticationException("Verify your email address before you proceed.");
         buildAndSaveToken(user, accessToken, refreshToken);
         return LoginResponse.builder()
                     .message("User logged in successfully")
@@ -158,6 +158,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+        log.info("::::: Initiating change password request :::::");
         User user = getCurrentUser();
         checkIfCurrentPasswordIsCorrect(changePasswordRequest.getCurrentPassword(), user.getPassword());
         checkIfCurrentAndNewPasswordAreNotTheSame(changePasswordRequest.getCurrentPassword(), changePasswordRequest.getNewPassword());
@@ -191,6 +192,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResetPasswordResponse requestPasswordReset(String email) {
+        log.info("::::: Initiating request password reset :::::");
         return userRepository.findByEmail(email)
                 .filter(User::isEnabled)
                 .map(user -> {
@@ -209,6 +211,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        log.info("::::: Initiating password reset :::::");
         ShepsToken shepsToken = tokenService
                 .validateToken(request.getToken(), request.getEmail(), TokenType.RESET_PASSWORD);
         User user = shepsToken.getUser();
