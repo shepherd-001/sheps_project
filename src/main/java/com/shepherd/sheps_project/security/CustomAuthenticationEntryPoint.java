@@ -1,5 +1,6 @@
 package com.shepherd.sheps_project.security;
 
+import com.shepherd.sheps_project.utils.AppUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,11 +12,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 
 @Component
 @Slf4j
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
-    private static final String UNAUTHORIZED_MESSAGE_FORMAT = "{\"error\": \"Unauthorized\", \"message\": \"%s\"}";
+
+
     @Override
     public void commence(
             @Nonnull HttpServletRequest request,
@@ -23,6 +26,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             @Nonnull AuthenticationException authException) throws IOException {
 
         log.error("::::: Unauthorized access attempt: {} :::::", authException.getMessage());
+
+
         if(!response.isCommitted())
             prepareUnauthorizedResponse(response, authException);
         else log.warn("::::: Unauthorized request received, but response has already been committed. :::::");
@@ -31,8 +36,9 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     private void prepareUnauthorizedResponse(HttpServletResponse response, AuthenticationException authException) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
         try(PrintWriter writer = response.getWriter()){
-            writer.write(String.format(UNAUTHORIZED_MESSAGE_FORMAT, authException));
+            writer.write(AppUtils.customAuthResponse(authException.getMessage(), LocalDateTime.now(), false));
         }
     }
 }

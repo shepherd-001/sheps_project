@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 contact = @Contact(
                         name = "David Oso AKA Shepherd",
                         email = "osodavid001@gmail.com",
-                        url = ""
+                        url = "https://some-url.com"
                 ),
                 description = "OpenApi documentation for Sheps Project App",
                 title = "OpenApi Specification - Sheps Project App Demo",
@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 ),
                 @Server(
                         description = "PROD ENV",
-                        url = ""
+                        url = "https://some-url.com"
                 )
         },
         security = {

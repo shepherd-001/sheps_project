@@ -3,6 +3,8 @@ package com.shepherd.sheps_project.security.securityConfig;
 import com.shepherd.sheps_project.security.AllowedURIs;
 import com.shepherd.sheps_project.security.CustomAuthenticationEntryPoint;
 import com.shepherd.sheps_project.security.CustomAuthorizationFilter;
+import com.shepherd.sheps_project.utils.AppUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Configuration
@@ -45,8 +48,8 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-//                .exceptionHandling(handler ->
-//                        handler.authenticationEntryPoint(authenticationEntryPoint))
+                .exceptionHandling(handler ->
+                        handler.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
@@ -58,7 +61,12 @@ public class SecurityConfig {
                 .logout(logout ->
                         logout.logoutUrl("/api/v1/auth/logout")
                                 .addLogoutHandler(logoutHandler)
-                                .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())))
+                                .logoutSuccessHandler(((request, response, authentication) -> {
+                                    SecurityContextHolder.clearContext();
+                                    response.setStatus(HttpServletResponse.SC_OK);
+                                    response.getWriter().write(AppUtils
+                                            .customAuthResponse("User logged out successfully", LocalDateTime.now(), true));
+                                        })))
                 .build();
     }
 

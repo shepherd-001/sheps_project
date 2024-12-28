@@ -34,15 +34,22 @@ public class LogoutService implements LogoutHandler {
     }
 
     private void processLogout(String jwt) {
-        tokenRepository.findByToken(jwt)
-                .ifPresent(this::invalidateUserTokens);
+        log.info("::::: Processing logout :::::");
+        tokenRepository.findByTokenAndTokenType(jwt, TokenType.JWT)
+                .ifPresentOrElse(this::invalidateUserTokens,
+                        ()-> log.warn("::::: No matching token found for invalidation :::::"));
     }
 
     private void invalidateUserTokens(ShepsToken shepsToken) {
+        log.info("::::: Initiating user jwt tokens invalidation :::::");
         User user = shepsToken.getUser();
         var tokens = tokenRepository.findAllByUserIdAndTokenType(user.getId(), TokenType.JWT);
-        tokenRepository.deleteAll(tokens);
-        log.info("::::: Invalidated user tokens :::::");
+        if (!tokens.isEmpty()) {
+            tokenRepository.deleteAll(tokens);
+            log.info("::::: Invalidated {} JWT tokens :::::", tokens.size());
+        } else {
+            log.warn("::::: No JWT tokens found for invalidation :::::");
+        }
         SecurityContextHolder.clearContext();
     }
 }

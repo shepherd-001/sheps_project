@@ -1,5 +1,6 @@
 package com.shepherd.sheps_project.security;
 
+import com.shepherd.sheps_project.data.models.TokenType;
 import com.shepherd.sheps_project.data.repository.TokenRepository;
 import com.shepherd.sheps_project.exceptions.ShepsException;
 import jakarta.annotation.Nonnull;
@@ -56,7 +57,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private boolean isTokenValid(String jwtToken) {
-        return tokenRepository.findByToken(jwtToken)
+        return tokenRepository.findByTokenAndTokenType(jwtToken, TokenType.JWT)
                 .map(token -> !token.isExpired() && !token.isRevoked())
                 .orElse(false);
     }

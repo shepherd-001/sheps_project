@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     private static ApiError errorResponseBuilder(Object error){
         return ApiError.builder()
-                .message("Request validation error")
+                .message("Field validation error")
                 .error(error)
                 .timestamp(LocalDateTime.now())
                 .status(false)
@@ -152,11 +152,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleException(IOException ex) {
         log.error("::::: IO exception: {} :::::", ex.getMessage());
             return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
-    public ResponseEntity<ApiError> handleException(org.springframework.security.core.AuthenticationException ex) {
-        log.error("::::: Spring security authentication exception: {} :::::", ex.getMessage());
-            return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 }

@@ -54,6 +54,6 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Object> logout(){
-        return ResponseEntity.ok(BaseResponse.build("User logged out successfully"));
+        return ResponseEntity.ok().body(BaseResponse.build("User logged out successfully"));
     }
 }

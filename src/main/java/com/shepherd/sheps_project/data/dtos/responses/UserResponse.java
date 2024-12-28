@@ -2,7 +2,8 @@ package com.shepherd.sheps_project.data.dtos.responses;
 
 import com.shepherd.sheps_project.data.models.Gender;
 import com.shepherd.sheps_project.data.models.Role;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.util.Set;
 

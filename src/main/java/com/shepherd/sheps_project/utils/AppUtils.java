@@ -10,6 +10,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Slf4j
 public final class AppUtils {
 
@@ -30,6 +33,12 @@ public final class AppUtils {
     public static Pageable createPageRequest(int pageNumber, int itemsPerPage, String sortField, Sort.Direction direction) {
         pageNumber = Math.max(pageNumber - 1, 0);
         return PageRequest.of(pageNumber, itemsPerPage, Sort.by(direction, sortField));
+    }
+
+    public static String customAuthResponse(String message, LocalDateTime timestamp, boolean isSuccessful){
+        String formattedTimestamp =
+        timestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss, dd-MM-yyyy"));
+        return String.format("{\"message\": \"%s\", \"timestamp\": \"%s\", \"isSuccessful\": \"%b\"}", message, formattedTimestamp, isSuccessful);
     }
 
     private AppUtils() {

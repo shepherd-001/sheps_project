@@ -1,9 +1,9 @@
 package com.shepherd.sheps_project.services.email;
 
-import jakarta.mail.*;
+import com.shepherd.sheps_project.exceptions.MailSenderException;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import com.shepherd.sheps_project.exceptions.MailSenderException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

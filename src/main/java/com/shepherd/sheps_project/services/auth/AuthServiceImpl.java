@@ -1,13 +1,13 @@
 package com.shepherd.sheps_project.services.auth;
 
-import com.shepherd.sheps_project.security.JwtService;
 import com.shepherd.sheps_project.data.dtos.requests.*;
 import com.shepherd.sheps_project.data.dtos.responses.*;
 import com.shepherd.sheps_project.data.models.*;
 import com.shepherd.sheps_project.data.repository.UserRepository;
 import com.shepherd.sheps_project.exceptions.*;
-import com.shepherd.sheps_project.services.email.MailNotificationService;
+import com.shepherd.sheps_project.security.JwtService;
 import com.shepherd.sheps_project.services.email.EmailValidationService;
+import com.shepherd.sheps_project.services.email.MailNotificationService;
 import com.shepherd.sheps_project.services.passwordServie.PasswordValidationService;
 import com.shepherd.sheps_project.services.token.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +43,8 @@ public class AuthServiceImpl implements AuthService {
     public RegisterUserResponse registerUser(RegisterUserRequest registrationRequest) {
         String email = registrationRequest.getEmail();
         checkIfUserExists(email);
-//        validateEmail(email);
-//        validatePassword(registrationRequest.getPassword());
+        validateEmail(email);
+        validatePassword(registrationRequest.getPassword());
         User newUser = buildRegisterUserRequest(registrationRequest);
         User savedUser = userRepository.save(newUser);
         log.info("::::: User with the first name {} registered successfully :::::", savedUser.getFirstName());
