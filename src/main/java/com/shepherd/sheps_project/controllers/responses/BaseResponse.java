@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 public class BaseResponse<T> {
     private T data;
+    private String message;
     private boolean isSuccessful;
     @JsonFormat(pattern = "HH:mm:ss, dd-MM-yyyy")
     private LocalDateTime timeStamp;
@@ -19,6 +20,14 @@ public class BaseResponse<T> {
     public static BaseResponse<Object> build(Object data){
         return BaseResponse.builder()
                 .data(data)
+                .isSuccessful(true)
+                .timeStamp(LocalDateTime.now())
+                .build();
+    }
+
+    public static BaseResponse<Object> build(String message){
+        return BaseResponse.builder()
+                .message(message)
                 .isSuccessful(true)
                 .timeStamp(LocalDateTime.now())
                 .build();

@@ -51,4 +51,9 @@ public class AuthController {
         return ResponseEntity.ok()
                 .body(BaseResponse.build(authService.resetPassword(resetPasswordRequest)));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout(){
+        return ResponseEntity.ok(BaseResponse.build("User logged out successfully"));
+    }
 }

@@ -15,8 +15,8 @@ public abstract class BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-//    @Column(name = "created_at", updatable = false)
-//    private LocalDateTime createdAt;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 //    @Column(name = "updated_at")
 //    private LocalDateTime updatedAt;
 //    @CreatedBy

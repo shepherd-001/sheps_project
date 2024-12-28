@@ -4,11 +4,16 @@ import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.exceptions.ShepsException;
 import com.shepherd.sheps_project.security.AuthenticatedUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Slf4j
 public final class AppUtils {
+
+
     public static User getCurrentUser() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -20,6 +25,11 @@ public final class AppUtils {
             log.error("Error fetching authenticated user: {}", e.getMessage());
             throw new ShepsException("Failed to fetch authenticated user");
         }
+    }
+
+    public static Pageable createPageRequest(int pageNumber, int itemsPerPage, String sortField, Sort.Direction direction) {
+        pageNumber = Math.max(pageNumber - 1, 0);
+        return PageRequest.of(pageNumber, itemsPerPage, Sort.by(direction, sortField));
     }
 
     private AppUtils() {
