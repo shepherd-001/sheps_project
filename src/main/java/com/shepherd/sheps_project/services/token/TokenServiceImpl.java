@@ -5,7 +5,7 @@ import com.shepherd.sheps_project.data.models.TokenType;
 import com.shepherd.sheps_project.data.models.User;
 import com.shepherd.sheps_project.data.repository.TokenRepository;
 import com.shepherd.sheps_project.exceptions.ShepsTokenException;
-import com.shepherd.sheps_project.utils.RandomStringGenerator;
+import com.shepherd.sheps_project.utils.RandomGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class TokenServiceImpl implements TokenService{
     public String saveToken(User user, TokenType tokenType, int expirationTimeInMinutes) {
         log.info("::::: Initiating the creation of new token :::::");
 
-        String token = RandomStringGenerator.generateRandomString(TOKEN_LENGTH);
+        String token = RandomGenerator.generateRandomString(TOKEN_LENGTH);
         ShepsToken shepsToken = ShepsToken.builder()
                 .user(user)
                 .tokenType(tokenType)

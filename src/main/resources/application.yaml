@@ -42,6 +42,12 @@ spring:
           writetimeout: 10000
 #        debug: true
 
+springdoc:
+  swagger-ui:
+    path: '/swagger-ui.html'
+    filter: true
+    tags-sorter: alpha
+
 base_url: http://localhost:${PORT}
 mail_from_email: ${MAIL_FROM_EMAIL}
 mail_from_name: ${MAIL_FROM_NAME}

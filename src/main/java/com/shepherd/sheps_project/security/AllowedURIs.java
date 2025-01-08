@@ -17,6 +17,7 @@ public final class AllowedURIs {
                 "/configuration/security",
                 "/swagger-ui/**",
                 "/webjars/**",
+                "/swagger-ui/index.html",
                 "/swagger-ui.html"
         };
     }
