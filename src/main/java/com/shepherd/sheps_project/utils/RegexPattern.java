@@ -1,10 +1,9 @@
 package com.shepherd.sheps_project.utils;
 
 public final class RegexPattern {
-    public static final String EMAIL = "^[a-zA-Z0-9](\\.?[a-zA-Z0-9_-])*@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$";
-    public static final String PASSWORD = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&*()_+={}\\[\\];':<>,.?/\\\\|\"]).{8,16}$";
-    public static final String USER_NAME = "^[a-zA-Z]+([-'a-zA-Z]*[a-zA-Z])?$";
-
+    public static final String EMAIL = "^(?!.*\\.\\.)(?!\\.)(?!.*\\.$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    public static final String PASSWORD = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^\\w\\s]).{8,20}$";
+    public static final String USER_NAME = "^[a-zA-Z]+(?:['-][a-zA-Z]+)*$";
 
 
     private RegexPattern() {

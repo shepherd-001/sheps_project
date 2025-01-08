@@ -53,6 +53,12 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleShepsException(Exception ex) {
+        log.error("::::: Exception: {} :::::", ex.getMessage());
+        return new ResponseEntity<>(errorResponseBuilder(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ShepsException.class)
     public ResponseEntity<ApiError> handleShepsException(ShepsException ex) {
         log.error("::::: Sheps exception: {} :::::", ex.getMessage());
