@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService{
         log.info("::::: Fetching all users :::::");
         Pageable pageable = findAllUsersPageRequest(pageNumber);
         Page<User> users = userRepository.findAll(pageable);
-        return buildPaginatedResponse(users);
+        return buildPaginatedUserResponse(users);
     }
 
     private Pageable findAllUsersPageRequest(int pageNumber){
@@ -65,10 +65,10 @@ public class UserServiceImpl implements UserService{
     private PaginatedResponse<UserResponse> getUserByStatus(boolean status, int pageNumber){
         Pageable pageable = findAllUsersPageRequest(pageNumber);
         Page<User> users = userRepository.findAllByIsEnabled(status, pageable);
-        return buildPaginatedResponse(users);
+        return buildPaginatedUserResponse(users);
     }
 
-    private PaginatedResponse<UserResponse> buildPaginatedResponse(Page<User> users) {
+    private PaginatedResponse<UserResponse> buildPaginatedUserResponse(Page<User> users) {
         List<UserResponse> content = users.isEmpty() ? Collections.emptyList() :
             users.stream().map(this::mapToUserResponse).toList();
 
